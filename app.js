@@ -269,6 +269,7 @@ addEventListener('hashchange', route);
 $('#logout').onclick = () => sb.auth.signOut();
 
 let ready = false;
+route(); // show the login right away; the auth callback re-renders once the session is known
 sb.auth.onAuthStateChange(async (_e, session) => {
   const was = user?.id;
   user = session?.user || null;
