@@ -1,0 +1,121 @@
+@import "tailwindcss";
+
+:root {
+  /* Futuristic Dark Palette */
+  --color-canvas: #070e11;
+  --color-card-bg: rgba(14, 26, 30, 0.85);
+  --color-hud-bg: rgba(18, 35, 39, 0.85);
+  --color-hud-border: rgba(52, 211, 153, 0.25);
+
+  /* Quadrant Accents */
+  --color-env: #22C55E;        /* Emerald Green (Top) */
+  --color-social: #FACC15;     /* Radiant Yellow (Right) */
+  --color-econ: #0EA5E9;       /* Electric Sky Blue (Bottom) */
+  --color-gov: #F00F6F;        /* Electric Magenta / Pink (Left) */
+
+  /* Palette Harmony Accents */
+  --color-primary: #F00F6F;       /* Electric Magenta */
+  --color-secondary: #B30A5C;     /* Deep Fuchsia */
+  --color-dark-accent: #6D185D;   /* Royal Plum */
+  --color-text-dark: #350E3B;     /* Blackberry */
+  --color-highlight: #DE62A1;     /* Rose Pink */
+  --color-light-bg: #D8C7D7;      /* Lavender Mist */
+  --color-main-bg: #FAFAFA;       /* Soft White */
+}
+
+@layer base {
+  html, body {
+    min-height: 100%;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  body {
+    font-family: 'Vazirmatn', 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background-color: #070e11;
+    color: #F1F5F9;
+    overflow-x: hidden;
+    margin: 0;
+    padding: 0;
+  }
+}
+
+/* Persian sans font */
+.font-sans-persian,
+.font-jomhuria {
+  font-family: 'Vazirmatn', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+}
+
+/* Ensure Persian text in SVG preserves proper RTL shaping and disables letter-spacing */
+svg text[direction="rtl"],
+[dir="rtl"] svg text,
+[dir="rtl"] svg textPath {
+  letter-spacing: normal !important;
+  text-rendering: optimizeLegibility;
+}
+
+/* Tech sans font */
+.font-tech {
+  font-family: 'Plus Jakarta Sans', 'Vazirmatn', system-ui, sans-serif;
+}
+
+/* Smooth sleek scrollbar with gentle contrast */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #091316;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #142a2f;
+  border-radius: 9999px;
+  border: 1px solid rgba(52, 211, 153, 0.15);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #10B981;
+}
+
+/* Gentle Celebration Pulse on Wheel Dial (Non-intrusive smooth breathing glow) */
+@keyframes wheel-gentle-pulse {
+  0%, 100% {
+    transform: scale(1);
+    filter: drop-shadow(0 0 14px rgba(34, 197, 94, 0.35)) drop-shadow(0 0 28px rgba(14, 165, 233, 0.2));
+  }
+  50% {
+    transform: scale(1.015);
+    filter: drop-shadow(0 0 28px rgba(34, 197, 94, 0.6)) drop-shadow(0 0 42px rgba(250, 204, 21, 0.35)) drop-shadow(0 0 56px rgba(240, 15, 111, 0.25));
+  }
+}
+
+.animate-wheel-pulse {
+  animation: wheel-gentle-pulse 4.2s ease-in-out infinite;
+  transform-origin: center center;
+}
+
+/* Gentle Ambient Particle Drift & Twinkle */
+@keyframes particle-drift {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0) scale(0.5);
+  }
+  30% {
+    opacity: 0.85;
+  }
+  75% {
+    opacity: 0.65;
+    transform: translate(var(--dx), var(--dy)) scale(1.1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(calc(var(--dx) * 1.3), calc(var(--dy) * 1.3)) scale(0.3);
+  }
+}
+
+.celebration-particle {
+  animation: particle-drift var(--dur, 3.6s) ease-out infinite;
+  animation-delay: var(--delay, 0s);
+  will-change: transform, opacity;
+}
