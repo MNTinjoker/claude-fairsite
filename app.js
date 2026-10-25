@@ -110,25 +110,20 @@ function renderLanding() {
           </a>`).join('')}
       </svg>
     </section>`;
-  fitLanding();
   if (needsSurvey()) showSurvey();
 }
 
-// Wide screens: fill (crop top/bottom). Tall screens: show the whole image so no shape is cut off.
-function fitLanding() {
-  const s = $('#land');
-  if (s) s.setAttribute('preserveAspectRatio', innerWidth / innerHeight > 1.6 ? 'xMidYMid slice' : 'xMidYMid meet');
-}
-addEventListener('resize', fitLanding);
 
 function renderSegment(key) {
   const seg = SEGMENTS[key];
+  // Full screen: the game owns the whole viewport; only a small home button floats on top.
+  $('#topbar').hidden = true;
   view.innerHTML = `
-    <section class="page">
-      <h1>${seg.title}</h1>
-      <iframe class="frame" src="${seg.src}" title="${seg.title}" allow="autoplay; fullscreen"></iframe>
-      <p class="note">${seg.activity in scores ? `امتیاز ثبت‌شده: ${scores[seg.activity]}` : 'امتیاز: ۱۰ تا ۲۰ بر اساس درصد. فقط بار اول ثبت می‌شود.'}</p>
+    <section class="fullscreen">
+      <iframe src="${seg.src}" title="${seg.title}" allow="autoplay; fullscreen"></iframe>
+      <a href="#/" class="home-fab" aria-label="خانه">خانه</a>
     </section>`;
+  toast(seg.activity in scores ? `امتیاز ثبت‌شده: ${scores[seg.activity]}` : 'امتیاز: ۱۰ تا ۲۰ بر اساس درصد. فقط بار اول ثبت می‌شود.');
 }
 
 function renderApps() {

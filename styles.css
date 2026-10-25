@@ -104,3 +104,11 @@ video, .tour-embed { width: 100%; max-height: 70vh; border-radius: 16px; backgro
 .opts label { display: flex; align-items: center; gap: 8px; margin: 6px 0; color: var(--text); font-size: 15px; }
 .opts input { width: auto; }
 #topbar .hello { color: var(--neon); font-weight: 600; }
+
+.fullscreen { position: fixed; inset: 0; z-index: 20; background: #000; }
+.fullscreen iframe { width: 100%; height: 100%; border: 0; display: block; }
+.home-fab {
+  position: fixed; top: 10px; left: 10px; z-index: 21; padding: 6px 12px; border-radius: 10px;
+  background: rgba(0, 0, 0, .55); border: 1px solid var(--neon-dim); color: var(--text);
+  text-decoration: none; font-size: 13px; backdrop-filter: blur(4px);
+}
