@@ -16,11 +16,14 @@ window.APP_CONFIG = {
     { id: 9, name: 'اپ ۹', tour: null },
   ],
 
-  // Survey shown after the user's first finished segment. 4 questions about the apps.
+  // Survey shown after the user's first finished segment.
+  // `options` → radio buttons; no `options` → text box. `showIf: [i, answer]` shows a question only when question i got that answer.
   SURVEY: [
-    { q: 'سوال ۱ درباره اپ‌ها؟', options: ['گزینه ۱', 'گزینه ۲', 'گزینه ۳', 'گزینه ۴'] },
-    { q: 'سوال ۲ درباره اپ‌ها؟', options: ['گزینه ۱', 'گزینه ۲', 'گزینه ۳', 'گزینه ۴'] },
-    { q: 'سوال ۳ درباره اپ‌ها؟', options: ['گزینه ۱', 'گزینه ۲', 'گزینه ۳', 'گزینه ۴'] },
-    { q: 'سوال ۴ درباره اپ‌ها؟', options: ['گزینه ۱', 'گزینه ۲', 'گزینه ۳', 'گزینه ۴'] },
+    { q: 'آیا تا به حال از اپ‌های مدیریت تسک یا پروژه استفاده کرده‌اید؟', options: ['بله', 'خیر'] },
+    { q: 'مهم‌ترین درخواست شما از آن اپ مدیریت پروژه چه بود؟', showIf: [0, 'بله'] },
+    { q: 'آیا آن اپ نیاز شما را کاملاً پاسخ داد؟', options: ['بله', 'خیر'], showIf: [0, 'بله'] },
+    { q: 'کدام نیاز شما را یک اپ مدیریت پروژه باید برطرف کند؟', showIf: [0, 'خیر'] },
+    { q: 'آیا تمایل به استفاده یک‌ماهه رایگان از اپ‌های مدیریت پروژه ما را دارید؟', options: ['بله', 'خیر'] },
   ],
+  SURVEY_THANKS: 'از همکاری شما سپاسگزارم',
 };

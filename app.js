@@ -149,19 +149,31 @@ function showSurvey() {
     <form class="panel" id="sv">
       <h1>نظرسنجی (۲۰ امتیاز)</h1>
       ${cfg.SURVEY.map((s, i) => `
-        <div class="q"><p>${i + 1}. ${s.q}</p>
-          ${s.options.map((o) => `<label><input type="radio" name="q${i}" value="${o}" required> ${o}</label>`).join('')}
+        <div class="q" data-i="${i}"><p>${s.q}</p>
+          ${s.options
+            ? s.options.map((o) => `<label><input type="radio" name="q${i}" value="${o}" required> ${o}</label>`).join('')
+            : `<textarea name="q${i}" rows="3" required></textarea>`}
         </div>`).join('')}
       <button class="btn block">ارسال</button>
     </form>`;
   m.hidden = false;
-  $('#sv').onsubmit = async (e) => {
+  const form = $('#sv');
+  const visible = (s) => !s.showIf || new FormData(form).get('q' + s.showIf[0]) === s.showIf[1];
+  const refresh = () => form.querySelectorAll('.q').forEach((el) => {
+    const on = visible(cfg.SURVEY[el.dataset.i]);
+    el.hidden = !on;
+    el.querySelectorAll('input, textarea').forEach((inp) => { inp.disabled = !on; });
+  });
+  form.onchange = refresh;
+  refresh();
+  form.onsubmit = async (e) => {
     e.preventDefault();
-    const fd = new FormData(e.target);
-    const answers = cfg.SURVEY.map((s, i) => ({ q: s.q, a: fd.get('q' + i) }));
+    const fd = new FormData(form);
+    const answers = cfg.SURVEY.filter(visible).map((s) => ({ q: s.q, a: fd.get('q' + cfg.SURVEY.indexOf(s)) }));
     const { error } = await sb.rpc('submit_survey', { p_answers: answers });
     if (error) return toast('خطا در ارسال');
-    m.hidden = true;
+    m.innerHTML = `<div class="panel"><h1>${cfg.SURVEY_THANKS}</h1><button class="btn block" id="sv-ok">بستن</button></div>`;
+    $('#sv-ok').onclick = () => { m.hidden = true; };
     await loadScores();
     toast('+۲۰ امتیاز');
   };

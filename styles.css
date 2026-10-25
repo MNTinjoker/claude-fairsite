@@ -34,7 +34,7 @@ button { font: inherit; cursor: pointer; }
 }
 .panel h1 { margin: 0 0 18px; font-size: 22px; text-align: center; }
 .panel label { display: block; margin: 12px 0 6px; color: var(--muted); font-size: 14px; }
-.panel input {
+.panel input, .panel textarea {
   width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--neon-dim);
   background: #000a; color: var(--text); font: inherit; direction: ltr;
 }
@@ -93,6 +93,7 @@ video, .tour-embed { width: 100%; max-height: 70vh; border-radius: 16px; backgro
 .q p { margin: 0 0 8px; font-weight: 600; }
 .q label { display: flex; align-items: center; gap: 8px; margin: 6px 0; color: var(--text); }
 .q input { width: auto; }
+.q textarea { direction: rtl; resize: vertical; }
 .toast {
   position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 30;
   padding: 12px 20px; border-radius: 12px; background: var(--card); border: 1px solid var(--neon);
