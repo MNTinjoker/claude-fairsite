@@ -23,20 +23,29 @@ const HOTSPOTS = [
 
 // Profile questions asked at sign-up. Stored in auth user_metadata; a trigger copies them to public.profiles.
 const ROLES = ['مدیر', 'کارشناس', 'مسئول فنی', 'مدیر اصلی سازمان'];
-const profileFields = () => `
-  <label>اسم شما چیست؟</label><input id="p-name" required autocomplete="name" class="rtl">
-  <label>می‌توانم برای ارسال پیامک «دریافت جایزه» شماره شما را داشته باشم؟</label>
-  <input type="tel" id="p-phone" required autocomplete="tel" placeholder="09xxxxxxxxx" pattern="[0-9۰-۹+ ]{10,15}">
-  <label>نام سازمان‌تان چیست؟</label><input id="p-org" autocomplete="organization" class="rtl">
+const ICON = {
+  user: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>',
+  phone: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="6" y="2" width="12" height="20" rx="3"/><path d="M11 18h2"/></svg>',
+  org: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M9 7h1M14 7h1M9 11h1M14 11h1M10 21v-4h4v4"/></svg>',
+};
+// full=false → returning user: only name + phone.
+const profileFields = (full = true) => `
+  <div class="row2">
+    <div class="field">${ICON.user}<input id="p-name" required autocomplete="name" class="rtl" placeholder="اسم شما" aria-label="اسم"></div>
+    <div class="field">${ICON.phone}<input type="tel" id="p-phone" required autocomplete="tel" placeholder="شماره موبایل" aria-label="شماره تلفن" pattern="[0-9۰-۹+ ]{10,15}"></div>
+  </div>
+  <p class="hint">${full ? 'شماره برای ارسال پیامک «دریافت جایزه» استفاده می‌شود.' : 'با همان اسم و شماره‌ای که ثبت‌نام کردی وارد شو.'}</p>
+  ${full ? `
+  <label>نام سازمان‌تان چیست؟</label><div class="field">${ICON.org}<input id="p-org" autocomplete="organization" class="rtl" placeholder="نام سازمان"></div>
   <label>کدام عنوان بیشتر مشغولیت شما را توصیف می‌کند؟</label>
   <select id="p-role"><option value="">انتخاب کنید</option>${ROLES.map((r) => `<option>${r}</option>`).join('')}</select>
   <label>تمایل دارید برای دمو رایگان اپ‌ها و پیاده‌سازی رایگان یک‌ماهه با شما تماس بگیریم؟</label>
-  <div class="opts row">${['بله', 'خیر'].map((o) => `<label><input type="radio" name="p-demo" value="${o}"> ${o}</label>`).join('')}</div>`;
+  <div class="opts row">${['بله', 'خیر'].map((o) => `<label><input type="radio" name="p-demo" value="${o}"> ${o}</label>`).join('')}</div>` : ''}`;
 const readProfile = () => ({
   name: $('#p-name').value.trim(),
-  org: $('#p-org').value.trim(),
+  org: $('#p-org')?.value.trim() || '',
   phone: $('#p-phone').value.trim(),
-  role: $('#p-role').value,
+  role: $('#p-role')?.value || '',
   wants_demo: $('input[name=p-demo]:checked')?.value === 'بله',
 });
 const profileComplete = (p) => p.name && p.phone && p.org && p.role && $('input[name=p-demo]:checked');
@@ -75,16 +84,21 @@ const needsSurvey = () => !('survey' in scores) && Object.keys(scores).length > 
 
 /* ---------- Views ---------- */
 
-function renderLogin() {
+function renderLogin(mode = 'up') {
   view.innerHTML = `
     <section class="login">
       <form class="panel" id="f">
-        <h1>ورود</h1>
-        ${profileFields()}
-        <button class="btn block" id="go">ورود</button>
+        <div class="tabs">
+          <button type="button" data-m="up" class="${mode === 'up' ? 'on' : ''}">ثبت‌نام</button>
+          <button type="button" data-m="in" class="${mode === 'in' ? 'on' : ''}">ورود</button>
+        </div>
+        <h1>${mode === 'up' ? 'ساخت حساب' : 'خوش برگشتی'}</h1>
+        ${profileFields(mode === 'up')}
+        <button class="btn block" id="go">${mode === 'up' ? 'ساخت حساب' : 'ورود'}</button>
         <div class="err" id="err"></div>
       </form>
     </section>`;
+  view.querySelectorAll('.tabs button').forEach((b) => { b.onclick = () => renderLogin(b.dataset.m); });
   $('#f').onsubmit = async (e) => {
     e.preventDefault();
     const err = (m) => { $('#go').disabled = false; $('#err').textContent = m; };
@@ -92,15 +106,14 @@ function renderLogin() {
     const p = readProfile();
     if (phoneDigits(p.phone).length < 10) return err('شماره تلفن درست نیست.');
     const creds = credsFor(p.name, p.phone);
-    const signIn = await sb.auth.signInWithPassword(creds);
-    if (!signIn.error) {
-      // Returning user: keep the new answers if they filled them in.
-      if (profileComplete(p)) await sb.auth.updateUser({ data: p });
+    if (mode === 'in') {
+      const { error } = await sb.auth.signInWithPassword(creds);
+      if (error) return err('اسم یا شماره درست نیست. اگر بار اول است، «ثبت‌نام» را بزن.');
       return;
     }
-    if (!profileComplete(p)) return err('برای اولین ورود، لطفاً به همه سوال‌ها جواب بده.');
+    if (!profileComplete(p)) return err('لطفاً به همه سوال‌ها جواب بده.');
     const { data, error } = await sb.auth.signUp({ ...creds, options: { data: p } });
-    if (error) return err(/registered|exists/i.test(error.message) ? 'این شماره با نام دیگری ثبت شده است.' : error.message);
+    if (error) return err(/registered|exists/i.test(error.message) ? 'این شماره قبلاً ثبت شده. از «ورود» استفاده کن.' : error.message);
     if (!data.session) return err('ثبت‌نام انجام شد ولی ورود نشد. تایید ایمیل در Supabase باید خاموش باشد.');
   };
 }
