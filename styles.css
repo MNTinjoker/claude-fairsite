@@ -38,7 +38,7 @@ button { font: inherit; cursor: pointer; }
 }
 .panel h1 { margin: 0 0 18px; font-size: 22px; text-align: center; }
 .panel label { display: block; margin: 12px 0 6px; color: var(--muted); font-size: 14px; }
-.panel input, .panel textarea {
+.panel input, .panel textarea, .panel select {
   width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--neon-dim);
   background: #000a; color: var(--text); font: inherit; direction: ltr;
 }
@@ -116,3 +116,5 @@ video, .tour-embed { width: 100%; max-height: 70vh; border-radius: 16px; backgro
   background: rgba(0, 0, 0, .55); border: 1px solid var(--neon-dim); color: var(--text);
   text-decoration: none; font-size: 13px; backdrop-filter: blur(4px);
 }
+.opts.row { display: flex; gap: 24px; }
+.panel select { direction: rtl; }

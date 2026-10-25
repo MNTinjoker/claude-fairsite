@@ -25,19 +25,27 @@ const HOTSPOTS = [
 const ROLES = ['مدیر', 'کارشناس', 'مسئول فنی', 'مدیر اصلی سازمان'];
 const profileFields = () => `
   <label>اسم شما چیست؟</label><input id="p-name" required autocomplete="name" class="rtl">
-  <label>نام سازمان‌تان چیست؟</label><input id="p-org" required autocomplete="organization" class="rtl">
   <label>می‌توانم برای ارسال پیامک «دریافت جایزه» شماره شما را داشته باشم؟</label>
-  <input type="tel" id="p-phone" autocomplete="tel" placeholder="09xxxxxxxxx" pattern="[0-9۰-۹+ ]{10,15}">
+  <input type="tel" id="p-phone" required autocomplete="tel" placeholder="09xxxxxxxxx" pattern="[0-9۰-۹+ ]{10,15}">
+  <label>نام سازمان‌تان چیست؟</label><input id="p-org" autocomplete="organization" class="rtl">
   <label>کدام عنوان بیشتر مشغولیت شما را توصیف می‌کند؟</label>
-  <div class="opts">${ROLES.map((r) => `<label><input type="radio" name="p-role" value="${r}" required> ${r}</label>`).join('')}</div>
+  <select id="p-role"><option value="">انتخاب کنید</option>${ROLES.map((r) => `<option>${r}</option>`).join('')}</select>
   <label>تمایل دارید برای دمو رایگان اپ‌ها و پیاده‌سازی رایگان یک‌ماهه با شما تماس بگیریم؟</label>
-  <div class="opts">${['بله', 'خیر'].map((o) => `<label><input type="radio" name="p-demo" value="${o}" required> ${o}</label>`).join('')}</div>`;
+  <div class="opts row">${['بله', 'خیر'].map((o) => `<label><input type="radio" name="p-demo" value="${o}"> ${o}</label>`).join('')}</div>`;
 const readProfile = () => ({
   name: $('#p-name').value.trim(),
   org: $('#p-org').value.trim(),
   phone: $('#p-phone').value.trim(),
-  role: $('input[name=p-role]:checked').value,
-  wants_demo: $('input[name=p-demo]:checked').value === 'بله',
+  role: $('#p-role').value,
+  wants_demo: $('input[name=p-demo]:checked')?.value === 'بله',
+});
+const profileComplete = (p) => p.name && p.phone && p.org && p.role && $('input[name=p-demo]:checked');
+
+// No email/password: the phone number is the account id and name + phone is the password.
+const phoneDigits = (phone) => phone.replace(/[۰-۹]/g, (d) => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d)).replace(/\D/g, '').slice(-10);
+const credsFor = (name, phone) => ({
+  email: `u${phoneDigits(phone)}@fair-login.app`,
+  password: `${phoneDigits(phone)}:${name.replace(/\s+/g, ' ').trim()}`,
 });
 const userName = () => user?.user_metadata?.name || '';
 const hi = (msg) => (userName() ? `${userName()}، ${msg}` : msg);
@@ -68,34 +76,33 @@ const needsSurvey = () => !('survey' in scores) && Object.keys(scores).length > 
 /* ---------- Views ---------- */
 
 function renderLogin() {
-  let mode = 'in';
-  const draw = () => {
-    view.innerHTML = `
-      <section class="login">
-        <form class="panel" id="f">
-          <h1>${mode === 'in' ? 'ورود' : 'ثبت‌نام'}</h1>
-          <label>ایمیل</label><input type="email" id="email" required autocomplete="email">
-          <label>رمز عبور</label><input type="password" id="pass" required minlength="6" autocomplete="${mode === 'in' ? 'current-password' : 'new-password'}">
-          ${mode === 'up' ? profileFields() : ''}
-          <button class="btn block" id="go">${mode === 'in' ? 'ورود' : 'ثبت‌نام'}</button>
-          <div class="err" id="err"></div>
-          <div class="switch">${mode === 'in' ? 'حساب نداری؟' : 'حساب داری؟'} <a href="#" id="sw">${mode === 'in' ? 'ثبت‌نام' : 'ورود'}</a></div>
-        </form>
-      </section>`;
-    $('#sw').onclick = (e) => { e.preventDefault(); mode = mode === 'in' ? 'up' : 'in'; draw(); };
-    $('#f').onsubmit = async (e) => {
-      e.preventDefault();
-      $('#go').disabled = true; $('#err').textContent = '';
-      const creds = { email: $('#email').value.trim(), password: $('#pass').value };
-      const { data, error } = mode === 'in'
-        ? await sb.auth.signInWithPassword(creds)
-        : await sb.auth.signUp({ ...creds, options: { data: readProfile() } });
-      $('#go').disabled = false;
-      if (error) return ($('#err').textContent = error.message);
-      if (mode === 'up' && !data.session) $('#err').textContent = 'ایمیل تایید را چک کن.';
-    };
+  view.innerHTML = `
+    <section class="login">
+      <form class="panel" id="f">
+        <h1>ورود</h1>
+        ${profileFields()}
+        <button class="btn block" id="go">ورود</button>
+        <div class="err" id="err"></div>
+      </form>
+    </section>`;
+  $('#f').onsubmit = async (e) => {
+    e.preventDefault();
+    const err = (m) => { $('#go').disabled = false; $('#err').textContent = m; };
+    $('#go').disabled = true; $('#err').textContent = '';
+    const p = readProfile();
+    if (phoneDigits(p.phone).length < 10) return err('شماره تلفن درست نیست.');
+    const creds = credsFor(p.name, p.phone);
+    const signIn = await sb.auth.signInWithPassword(creds);
+    if (!signIn.error) {
+      // Returning user: keep the new answers if they filled them in.
+      if (profileComplete(p)) await sb.auth.updateUser({ data: p });
+      return;
+    }
+    if (!profileComplete(p)) return err('برای اولین ورود، لطفاً به همه سوال‌ها جواب بده.');
+    const { data, error } = await sb.auth.signUp({ ...creds, options: { data: p } });
+    if (error) return err(/registered|exists/i.test(error.message) ? 'این شماره با نام دیگری ثبت شده است.' : error.message);
+    if (!data.session) return err('ثبت‌نام انجام شد ولی ورود نشد. تایید ایمیل در Supabase باید خاموش باشد.');
   };
-  draw();
 }
 
 function renderLanding() {
@@ -175,6 +182,7 @@ function showProfile() {
   m.hidden = false;
   $('#pf').onsubmit = async (e) => {
     e.preventDefault();
+    if (!profileComplete(readProfile())) return ($('#pf-err').textContent = 'لطفاً به همه سوال‌ها جواب بده.');
     const { data, error } = await sb.auth.updateUser({ data: readProfile() });
     if (error) return ($('#pf-err').textContent = error.message);
     user = data.user;
