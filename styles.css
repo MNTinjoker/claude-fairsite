@@ -61,8 +61,17 @@ button { font: inherit; cursor: pointer; }
   transition: background .15s, border-color .15s;
 }
 .panel input::placeholder { color: #6b6b70; }
-.panel input:hover, .panel select:hover, .panel textarea:hover { background: var(--field-hover); }
-.panel input:focus, .panel select:focus, .panel textarea:focus { border-color: rgba(255, 255, 255, .25); }
+/* Soft light that sweeps in from the corner on hover, stronger on focus (like the reference) */
+.panel input:hover, .panel select:hover, .panel textarea:hover {
+  background: radial-gradient(120% 140% at 100% 0%, rgba(255, 255, 255, .10), transparent 55%), var(--field-hover);
+  border-color: rgba(255, 255, 255, .12);
+}
+.panel input:focus, .panel select:focus, .panel textarea:focus {
+  background: radial-gradient(120% 160% at 100% 0%, rgba(255, 255, 255, .22), transparent 60%), var(--field-hover);
+  border-color: rgba(255, 255, 255, .35);
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, .06), 0 0 18px rgba(255, 255, 255, .10);
+}
+.field:focus-within svg { color: var(--text); }
 .panel input.rtl, .panel select, .q textarea { direction: rtl; }
 
 /* Input with an icon inside */
