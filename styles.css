@@ -99,3 +99,8 @@ video, .tour-embed { width: 100%; max-height: 70vh; border-radius: 16px; backgro
   padding: 12px 20px; border-radius: 12px; background: var(--card); border: 1px solid var(--neon);
   box-shadow: 0 0 20px var(--neon-dim);
 }
+
+.panel input.rtl { direction: rtl; }
+.opts label { display: flex; align-items: center; gap: 8px; margin: 6px 0; color: var(--text); font-size: 15px; }
+.opts input { width: auto; }
+#topbar .hello { color: var(--neon); font-weight: 600; }

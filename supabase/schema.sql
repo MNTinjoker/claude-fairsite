@@ -74,3 +74,37 @@ revoke all on function public.submit_score(text, int) from public, anon;
 revoke all on function public.submit_survey(jsonb) from public, anon;
 grant execute on function public.submit_score(text, int) to authenticated;
 grant execute on function public.submit_survey(jsonb) to authenticated;
+
+-- Profile answered at sign-up (name, organization, phone, role, wants a demo call).
+-- The client stores it in auth user_metadata; this trigger keeps public.profiles in sync.
+create table if not exists public.profiles (
+  user_id    uuid primary key references auth.users(id) on delete cascade,
+  name       text,
+  org        text,
+  phone      text,
+  role       text,
+  wants_demo boolean,
+  updated_at timestamptz not null default now()
+);
+alter table public.profiles enable row level security;
+drop policy if exists "own profile" on public.profiles;
+create policy "own profile" on public.profiles for select using (auth.uid() = user_id);
+
+create or replace function public.sync_profile()
+returns trigger language plpgsql security definer set search_path = public as $$
+declare m jsonb := new.raw_user_meta_data;
+begin
+  if m ? 'name' then
+    insert into profiles (user_id, name, org, phone, role, wants_demo, updated_at)
+    values (new.id, m->>'name', m->>'org', m->>'phone', m->>'role', (m->>'wants_demo')::boolean, now())
+    on conflict (user_id) do update set
+      name = excluded.name, org = excluded.org, phone = excluded.phone,
+      role = excluded.role, wants_demo = excluded.wants_demo, updated_at = now();
+  end if;
+  return new;
+end $$;
+
+drop trigger if exists on_auth_user_profile on auth.users;
+create trigger on_auth_user_profile
+  after insert or update of raw_user_meta_data on auth.users
+  for each row execute function public.sync_profile();

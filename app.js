@@ -21,6 +21,27 @@ const HOTSPOTS = [
   { route: 'match3', label: 'بازی ۳ تایی', lx: 1428, ly: 220, shape: '<path d="M1428 242 Q1450 334 1545 355 Q1450 376 1428 472 Q1406 376 1310 355 Q1406 334 1428 242 Z"/>' },
 ];
 
+// Profile questions asked at sign-up. Stored in auth user_metadata; a trigger copies them to public.profiles.
+const ROLES = ['مدیر', 'کارشناس', 'مسئول فنی', 'مدیر اصلی سازمان'];
+const profileFields = () => `
+  <label>اسم شما چیست؟</label><input id="p-name" required autocomplete="name" class="rtl">
+  <label>نام سازمان‌تان چیست؟</label><input id="p-org" required autocomplete="organization" class="rtl">
+  <label>می‌توانم برای ارسال پیامک «دریافت جایزه» شماره شما را داشته باشم؟</label>
+  <input type="tel" id="p-phone" autocomplete="tel" placeholder="09xxxxxxxxx" pattern="[0-9۰-۹+ ]{10,15}">
+  <label>کدام عنوان بیشتر مشغولیت شما را توصیف می‌کند؟</label>
+  <div class="opts">${ROLES.map((r) => `<label><input type="radio" name="p-role" value="${r}" required> ${r}</label>`).join('')}</div>
+  <label>تمایل دارید برای دمو رایگان اپ‌ها و پیاده‌سازی رایگان یک‌ماهه با شما تماس بگیریم؟</label>
+  <div class="opts">${['بله', 'خیر'].map((o) => `<label><input type="radio" name="p-demo" value="${o}" required> ${o}</label>`).join('')}</div>`;
+const readProfile = () => ({
+  name: $('#p-name').value.trim(),
+  org: $('#p-org').value.trim(),
+  phone: $('#p-phone').value.trim(),
+  role: $('input[name=p-role]:checked').value,
+  wants_demo: $('input[name=p-demo]:checked').value === 'بله',
+});
+const userName = () => user?.user_metadata?.name || '';
+const hi = (msg) => (userName() ? `${userName()}، ${msg}` : msg);
+
 function toast(msg) {
   const t = $('#toast');
   t.textContent = msg; t.hidden = false;
@@ -39,7 +60,7 @@ async function submit(activity, percent = null) {
   const { data, error } = await sb.rpc('submit_score', { p_activity: activity, p_percent: percent });
   if (error) return toast('خطا در ثبت امتیاز');
   await loadScores();
-  toast(first ? `+${data} امتیاز` : 'امتیاز فقط برای بار اول ثبت می‌شود');
+  toast(hi(first ? `+${data} امتیاز` : 'امتیاز فقط برای بار اول ثبت می‌شود'));
 }
 
 const needsSurvey = () => !('survey' in scores) && Object.keys(scores).length > 0;
@@ -55,6 +76,7 @@ function renderLogin() {
           <h1>${mode === 'in' ? 'ورود' : 'ثبت‌نام'}</h1>
           <label>ایمیل</label><input type="email" id="email" required autocomplete="email">
           <label>رمز عبور</label><input type="password" id="pass" required minlength="6" autocomplete="${mode === 'in' ? 'current-password' : 'new-password'}">
+          ${mode === 'up' ? profileFields() : ''}
           <button class="btn block" id="go">${mode === 'in' ? 'ورود' : 'ثبت‌نام'}</button>
           <div class="err" id="err"></div>
           <div class="switch">${mode === 'in' ? 'حساب نداری؟' : 'حساب داری؟'} <a href="#" id="sw">${mode === 'in' ? 'ثبت‌نام' : 'ورود'}</a></div>
@@ -65,7 +87,9 @@ function renderLogin() {
       e.preventDefault();
       $('#go').disabled = true; $('#err').textContent = '';
       const creds = { email: $('#email').value.trim(), password: $('#pass').value };
-      const { data, error } = mode === 'in' ? await sb.auth.signInWithPassword(creds) : await sb.auth.signUp(creds);
+      const { data, error } = mode === 'in'
+        ? await sb.auth.signInWithPassword(creds)
+        : await sb.auth.signUp({ ...creds, options: { data: readProfile() } });
       $('#go').disabled = false;
       if (error) return ($('#err').textContent = error.message);
       if (mode === 'up' && !data.session) $('#err').textContent = 'ایمیل تایید را چک کن.';
@@ -143,6 +167,26 @@ function renderTour(id) {
   if (w) w.onclick = () => { w.disabled = true; submit(activity); };
 }
 
+// Users who signed up before the profile questions existed answer them once after login.
+function showProfile() {
+  const m = $('#modal');
+  m.innerHTML = `
+    <form class="panel" id="pf">
+      <h1>چند سوال کوتاه</h1>
+      ${profileFields()}
+      <button class="btn block">ادامه</button>
+      <div class="err" id="pf-err"></div>
+    </form>`;
+  m.hidden = false;
+  $('#pf').onsubmit = async (e) => {
+    e.preventDefault();
+    const { data, error } = await sb.auth.updateUser({ data: readProfile() });
+    if (error) return ($('#pf-err').textContent = error.message);
+    user = data.user;
+    route();
+  };
+}
+
 function showSurvey() {
   const m = $('#modal');
   m.innerHTML = `
@@ -172,10 +216,11 @@ function showSurvey() {
     const answers = cfg.SURVEY.filter(visible).map((s) => ({ q: s.q, a: fd.get('q' + cfg.SURVEY.indexOf(s)) }));
     const { error } = await sb.rpc('submit_survey', { p_answers: answers });
     if (error) return toast('خطا در ارسال');
-    m.innerHTML = `<div class="panel"><h1>${cfg.SURVEY_THANKS}</h1><button class="btn block" id="sv-ok">بستن</button></div>`;
+    m.innerHTML = `<div class="panel"><h1 id="sv-thanks"></h1><button class="btn block" id="sv-ok">بستن</button></div>`;
+    $('#sv-thanks').textContent = hi(cfg.SURVEY_THANKS);
     $('#sv-ok').onclick = () => { m.hidden = true; };
     await loadScores();
-    toast('+۲۰ امتیاز');
+    toast(hi('+۲۰ امتیاز'));
   };
 }
 
@@ -195,6 +240,8 @@ function route() {
   $('#modal').hidden = true;
   if (!user) { $('#topbar').hidden = true; return renderLogin(); }
   $('#topbar').hidden = false;
+  $('#hello').textContent = userName() ? `سلام ${userName()}` : '';
+  if (!userName()) { view.innerHTML = ''; return showProfile(); }
   const h = location.hash.replace('#/', '');
   if (SEGMENTS[h]) renderSegment(h);
   else if (h === 'apps') renderApps();
