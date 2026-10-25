@@ -1,7 +1,7 @@
 // Fill these from Supabase → Project Settings → API
 window.APP_CONFIG = {
-  SUPABASE_URL: 'https://YOUR-PROJECT.supabase.co',
-  SUPABASE_ANON_KEY: 'YOUR-ANON-KEY',
+  SUPABASE_URL: 'https://gyturwiuuncwgygquvim.supabase.co',
+  SUPABASE_ANON_KEY: 'sb_publishable_R4PqdgAWBR2OE6-OQewyuQ_s6q0CPQ6',
 
   // 9 apps. Put each tour video in /tours and set `tour` (e.g. 'tours/app1.mp4'), or a YouTube/Aparat embed URL.
   APPS: [
