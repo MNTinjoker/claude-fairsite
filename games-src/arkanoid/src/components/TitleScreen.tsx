@@ -88,6 +88,7 @@ export const TitleScreen: React.FC<TitleScreenProps> = ({
 
       {/* Main Centerpiece: Bespoke Title Lockup */}
       <div className="flex flex-col items-center text-center my-auto max-w-lg">
+        <img src="logo.png" alt="Pars Project" className="h-16 sm:h-20 mb-4 drop-shadow-[0_0_12px_rgba(57,255,106,0.4)]" />
         {/* Retro SVG Emblem */}
         <div className="relative mb-6">
           <svg className="w-64 sm:w-84 h-24 sm:h-28" viewBox="0 0 340 100" fill="none" xmlns="http://www.w3.org/2000/svg">

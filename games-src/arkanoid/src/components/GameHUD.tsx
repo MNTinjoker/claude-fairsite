@@ -48,7 +48,8 @@ export const GameHUD: React.FC<GameHUDProps> = ({
       dir={isFa ? 'rtl' : 'ltr'}
     >
       {/* Top Perimeter Status Cluster */}
-      <div className="w-full flex items-center justify-between text-xs sm:text-sm">
+      <div className="relative w-full flex items-center justify-between text-xs sm:text-sm">
+        <img src="logo.png" alt="Pars Project" className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-9 sm:h-11 opacity-90" />
         {/* Score & Combo */}
         <div className="flex flex-col bg-slate-950/80 border border-slate-800/80 rounded-lg px-3 py-1.5 backdrop-blur-xs pointer-events-auto">
           <div className="flex items-center gap-2">

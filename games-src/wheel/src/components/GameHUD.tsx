@@ -53,6 +53,7 @@ export const GameHUD: React.FC<Props> = ({
             {lang === 'fa' ? 'صفحه اصلی' : 'HOME'}
           </span>
         </button>
+        <img src="logo.png" alt="Pars Project" className="h-9 sm:h-12 shrink-0 drop-shadow-[0_0_10px_rgba(57,255,106,0.4)]" />
       </div>
 
       {/* TOP CENTER: FLOATING GLASS CAPSULE HUD WITH 20% LESS ROUND CORNERS (rounded-[14px]) */}

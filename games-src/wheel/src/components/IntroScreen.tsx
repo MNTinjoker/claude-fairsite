@@ -37,7 +37,7 @@ export const IntroScreen: React.FC<Props> = ({ onEnter, lang, onToggleLang }) =>
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center gap-2.5">
-          <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-[0_0_8px_#34D399]" />
+          <img src="logo.png" alt="Pars Project" className="h-10 sm:h-14 shrink-0 drop-shadow-[0_0_10px_rgba(57,255,106,0.4)]" />
           {isFa ? (
             <span className="font-sans-persian text-xs sm:text-base font-bold text-emerald-300 drop-shadow-sm">
               مدل وایز · ارزیابی تأثیر پایداری پروژه (PSIA)

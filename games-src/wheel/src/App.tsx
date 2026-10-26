@@ -840,7 +840,7 @@ export default function App() {
             {/* Central Stage: Flanking Floating Cards & Central Circular Wheel (optimized for dynamic card lengths & mobile scrolling) */}
             <div className="w-full flex flex-col lg:flex-row items-center justify-center gap-2.5 sm:gap-4 xl:gap-8 relative pb-4 sm:pb-8">
               {/* Left Flank: Floating Unplaced Answer Cards (cards expand in length dynamically based on text) */}
-              <div className="w-full lg:w-[300px] xl:w-[420px] 2xl:w-[460px] lg:shrink-0 flex flex-wrap justify-center items-center content-center gap-1.5 sm:gap-2.5 py-1 sm:py-2 z-10 max-w-full order-2 lg:order-1">
+              <div className="w-full lg:w-auto lg:flex-1 lg:basis-0 lg:min-w-0 lg:max-w-[460px] flex flex-wrap justify-center items-center content-center gap-1.5 sm:gap-2.5 py-1 sm:py-2 z-10 max-w-full order-2 lg:order-1">
                 {leftFlankWords.map((word, idx) => (
                   <FloatingWordCard
                     key={word.id}
@@ -863,7 +863,7 @@ export default function App() {
               </div>
 
               {/* Center: The Precision Circular Wheel Dial (order-1 on mobile, order-2 on lg) */}
-              <div className="relative flex items-center justify-center shrink-0 w-full max-w-[min(96vw,400px)] sm:max-w-[480px] md:max-w-[560px] lg:max-w-[620px] aspect-square order-1 lg:order-2 my-0.5 sm:my-2 lg:my-0">
+              <div className="relative flex items-center justify-center shrink-0 w-full max-w-[min(96vw,400px)] sm:max-w-[480px] md:max-w-[560px] lg:w-[min(620px,calc(100vh-170px),46vw)] lg:max-w-none aspect-square order-1 lg:order-2 my-0.5 sm:my-2 lg:my-0">
                 <CircularWheel
                   placedWords={placedWords}
                   selectedWord={selectedWord}
@@ -887,7 +887,7 @@ export default function App() {
               </div>
 
               {/* Right Flank: Floating Unplaced Answer Cards (order-3) */}
-              <div className="w-full lg:w-[300px] xl:w-[420px] 2xl:w-[460px] lg:shrink-0 flex flex-wrap justify-center items-center content-center gap-1.5 sm:gap-2.5 py-1 sm:py-2 z-10 max-w-full order-3">
+              <div className="w-full lg:w-auto lg:flex-1 lg:basis-0 lg:min-w-0 lg:max-w-[460px] flex flex-wrap justify-center items-center content-center gap-1.5 sm:gap-2.5 py-1 sm:py-2 z-10 max-w-full order-3">
                 {rightFlankWords.map((word, idx) => (
                   <FloatingWordCard
                     key={word.id}
