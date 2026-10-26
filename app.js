@@ -78,7 +78,11 @@ async function submit(activity, percent = null) {
   if (error) return toast('خطا در ثبت امتیاز');
   await loadScores();
   toast(hi(first ? `+${data} امتیاز` : 'امتیاز فقط برای بار اول ثبت می‌شود'));
+  return first;
 }
+
+// Show the league after a first-time score (and always for segments with league: true).
+const showLeagueSoon = () => setTimeout(() => { location.hash = '#/league'; }, 2500);
 
 const needsSurvey = () => !('survey' in scores) && Object.keys(scores).length > 0;
 
@@ -209,22 +213,48 @@ const esc = (v) => String(v ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '
 const fa = (n) => String(n).replace(/\d/g, (d) => '۰۱۲۳۴۵۶۷۸۹'[d]);
 
 // League: everyone's total and rank, with the current player highlighted.
+// Local avatar per user: emoji on a gradient picked from the user id (nothing sent elsewhere).
+const AVATARS = ['🦊', '🐼', '🐯', '🦁', '🐸', '🐨', '🐵', '🦉', '🐙', '🦄', '🐲', '🐬', '🐝', '🦋', '🐢', '🐧'];
+const HUES = [140, 160, 190, 45, 280, 320, 20, 210];
+function avatar(r, size = '') {
+  let h = 0;
+  for (const c of String(r.user_id)) h = (h * 31 + c.charCodeAt(0)) >>> 0;
+  const hue = HUES[h % HUES.length];
+  return `<span class="ava ${size}" style="--h:${hue}">${AVATARS[(h >> 3) % AVATARS.length]}</span>`;
+}
+const LAUREL = `<svg class="laurel" viewBox="0 0 64 42" fill="currentColor"><ellipse cx="26.2" cy="37.0" rx="5" ry="2.2" transform="rotate(-142 26.2 37.0)"/><ellipse cx="19.4" cy="32.4" rx="5" ry="2.2" transform="rotate(-114 19.4 32.4)"/><ellipse cx="15.5" cy="25.1" rx="5" ry="2.2" transform="rotate(-86 15.5 25.1)"/><ellipse cx="15.5" cy="16.9" rx="5" ry="2.2" transform="rotate(-58 15.5 16.9)"/><ellipse cx="19.4" cy="9.6" rx="5" ry="2.2" transform="rotate(-30 19.4 9.6)"/><ellipse cx="37.8" cy="37.0" rx="5" ry="2.2" transform="rotate(142 37.8 37.0)"/><ellipse cx="44.6" cy="32.4" rx="5" ry="2.2" transform="rotate(114 44.6 32.4)"/><ellipse cx="48.5" cy="25.1" rx="5" ry="2.2" transform="rotate(86 48.5 25.1)"/><ellipse cx="48.5" cy="16.9" rx="5" ry="2.2" transform="rotate(58 48.5 16.9)"/><ellipse cx="44.6" cy="9.6" rx="5" ry="2.2" transform="rotate(30 44.6 9.6)"/></svg>`;
+const CROWN = `<svg class="crown" viewBox="0 0 48 32"><path d="M4 28 L8 8 L18 18 L24 4 L30 18 L40 8 L44 28 Z" fill="url(#cg)"/><defs><linearGradient id="cg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff6b0"/><stop offset="1" stop-color="#f5b300"/></linearGradient></defs></svg>`;
+
 async function renderLeague() {
-  view.innerHTML = `<section class="page"><h1>لیگ امتیازات</h1><div class="panel wide-panel" id="lg">در حال بارگذاری...</div></section>`;
+  view.innerHTML = `<section class="page league"><h1>لیگ امتیازات</h1><div id="lg" class="lg-loading">در حال بارگذاری...</div></section>`;
   const { data, error } = await sb.rpc('get_leaderboard');
   if (!$('#lg')) return;
   if (error) return ($('#lg').textContent = 'خطا در بارگذاری لیگ');
+  if (!data.length) return ($('#lg').textContent = 'هنوز کسی امتیاز نگرفته. اولین نفر باش!');
   const me = data.find((r) => r.is_me);
+  const podium = [data[1], data[0], data[2]].map((r, i) => r && `
+    <div class="pod p${r.rank} ${r.is_me ? 'me' : ''}" style="--d:${[0.35, 0.15, 0.55][i]}s">
+      <div class="who">
+        ${r.rank === 1 ? CROWN : ''}
+        ${avatar(r, 'big')}
+        <div class="nm">${esc(r.name)}</div>
+        <div class="pts">✦ ${fa(r.total)}</div>
+      </div>
+      <div class="block"><span class="shine"></span>${LAUREL}<b>${fa(r.rank)}</b></div>
+    </div>`).join('');
+  const sparks = Array.from({ length: 28 }, () =>
+    `<i style="left:${Math.random() * 100}%;top:${Math.random() * 100}%;--t:${(2 + Math.random() * 3).toFixed(2)}s;--w:${(Math.random() * 3).toFixed(2)}s;--s:${(0.5 + Math.random()).toFixed(2)}"></i>`).join('');
+  $('#lg').className = '';
   $('#lg').innerHTML = `
-    ${me ? `<div class="my-rank">رتبه‌ی تو: <b>${fa(me.rank)}</b> از ${fa(data.length)} نفر · امتیاز: <b>${fa(me.total)}</b></div>` : ''}
-    <table class="table">
-      <thead><tr><th>رتبه</th><th>نام</th><th>سازمان</th><th>امتیاز</th></tr></thead>
-      <tbody>${data.map((r) => `
-        <tr class="${r.is_me ? 'me' : ''}">
-          <td>${r.rank <= 3 ? ['🥇', '🥈', '🥉'][r.rank - 1] : fa(r.rank)}</td>
-          <td>${esc(r.name)}</td><td>${esc(r.org)}</td><td><b>${fa(r.total)}</b></td>
-        </tr>`).join('')}</tbody>
-    </table>`;
+    <div class="podium"><div class="sparks">${sparks}</div>${podium}</div>
+    ${me ? `<div class="my-rank pop" style="--d:.7s">رتبه‌ی تو: <b>${fa(me.rank)}</b> از ${fa(data.length)} نفر · امتیاز: <b>${fa(me.total)}</b></div>` : ''}
+    <ol class="ranks">${data.map((r, i) => `
+      <li class="pop ${r.is_me ? 'me' : ''} ${r.rank <= 3 ? 'top' : ''}" style="--d:${(0.8 + i * 0.06).toFixed(2)}s">
+        <span class="rk">${r.rank <= 3 ? LAUREL : ''}<b>${fa(r.rank)}</b></span>
+        ${avatar(r)}
+        <span class="nm">${esc(r.name)}<small>${esc(r.org)}</small></span>
+        <span class="pts">${fa(r.total)}</span>
+      </li>`).join('')}</ol>`;
 }
 
 // Admin: users (scores, reset, delete) and survey answers.
@@ -303,9 +333,9 @@ function renderTour(id) {
       <p class="note"><a href="#/apps">← بازگشت به اپ‌ها</a></p>
     </section>`;
   const vid = $('#vid');
-  if (vid) vid.onended = () => submit(activity);
+  if (vid) vid.onended = () => submit(activity).then((f) => f && showLeagueSoon());
   const w = $('#watched');
-  if (w) w.onclick = () => { w.disabled = true; submit(activity); };
+  if (w) w.onclick = () => { w.disabled = true; submit(activity).then((f) => f && showLeagueSoon()); };
 }
 
 // Users who signed up before the profile questions existed answer them once after login.
@@ -375,7 +405,7 @@ addEventListener('message', (e) => {
   const seg = SEGMENTS[location.hash.replace('#/', '')];
   if (!seg) return;
   submit(seg.activity, Math.round(Number(e.data.percent) || 0))
-    .then(() => seg.league && setTimeout(() => { location.hash = '#/league'; }, 2500));
+    .then((first) => (first || seg.league) && showLeagueSoon());
 });
 
 /* ---------- Router ---------- */
