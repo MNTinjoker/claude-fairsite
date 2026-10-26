@@ -40,15 +40,18 @@ const profileFields = (full = true) => `
   <label>کدام عنوان بیشتر مشغولیت شما را توصیف می‌کند؟</label>
   <select id="p-role"><option value="">انتخاب کنید</option>${ROLES.map((r) => `<option>${r}</option>`).join('')}</select>
   <label>تمایل دارید برای دمو رایگان اپ‌ها و پیاده‌سازی رایگان یک‌ماهه با شما تماس بگیریم؟</label>
-  <div class="opts row">${['بله', 'خیر'].map((o) => `<label><input type="radio" name="p-demo" value="${o}"> ${o}</label>`).join('')}</div>` : ''}`;
+  <div class="opts row">${['بله', 'خیر'].map((o) => `<label><input type="radio" name="p-demo" value="${o}"> ${o}</label>`).join('')}</div>
+  <label>آواتار خودت را انتخاب کن</label>
+  <div class="ava-pick">${Array.from({ length: 10 }, (_, i) => `<label><input type="radio" name="p-ava" value="${i + 1}"><img src="assets/avatars/a${i + 1}.webp" alt="آواتار ${i + 1}"></label>`).join('')}</div>` : ''}`;
 const readProfile = () => ({
   name: $('#p-name').value.trim(),
   org: $('#p-org')?.value.trim() || '',
   phone: $('#p-phone').value.trim(),
   role: $('#p-role')?.value || '',
   wants_demo: $('input[name=p-demo]:checked')?.value === 'بله',
+  avatar: Number($('input[name=p-ava]:checked')?.value) || null,
 });
-const profileComplete = (p) => p.name && p.phone && p.org && p.role && $('input[name=p-demo]:checked');
+const profileComplete = (p) => p.name && p.phone && p.org && p.role && p.avatar && $('input[name=p-demo]:checked');
 
 // No email/password: the phone number is the account id and name + phone is the password.
 const phoneDigits = (phone) => phone.replace(/[۰-۹]/g, (d) => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d)).replace(/\D/g, '').slice(-10);
@@ -213,11 +216,11 @@ const esc = (v) => String(v ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '
 const fa = (n) => String(n).replace(/\d/g, (d) => '۰۱۲۳۴۵۶۷۸۹'[d]);
 
 // League: everyone's total and rank, with the current player highlighted.
-// Avatar picture per user, picked from the user id (local files, nothing sent elsewhere).
+// The avatar the user picked at sign-up; older accounts get one derived from their id.
 function avatar(r, cls = '') {
-  let h = 0;
-  for (const c of String(r.user_id)) h = (h * 31 + c.charCodeAt(0)) >>> 0;
-  return `<img class="ava ${cls}" src="assets/avatars/${h % 24}.svg" alt="">`;
+  let n = r.avatar;
+  if (!n) { let h = 0; for (const c of String(r.user_id)) h = (h * 31 + c.charCodeAt(0)) >>> 0; n = (h % 10) + 1; }
+  return `<img class="ava ${cls}" src="assets/avatars/a${n}.webp" alt="">`;
 }
 const LAUREL = `<svg class="laurel" viewBox="0 0 64 42" fill="currentColor"><ellipse cx="26.2" cy="37.0" rx="5" ry="2.2" transform="rotate(-142 26.2 37.0)"/><ellipse cx="19.4" cy="32.4" rx="5" ry="2.2" transform="rotate(-114 19.4 32.4)"/><ellipse cx="15.5" cy="25.1" rx="5" ry="2.2" transform="rotate(-86 15.5 25.1)"/><ellipse cx="15.5" cy="16.9" rx="5" ry="2.2" transform="rotate(-58 15.5 16.9)"/><ellipse cx="19.4" cy="9.6" rx="5" ry="2.2" transform="rotate(-30 19.4 9.6)"/><ellipse cx="37.8" cy="37.0" rx="5" ry="2.2" transform="rotate(142 37.8 37.0)"/><ellipse cx="44.6" cy="32.4" rx="5" ry="2.2" transform="rotate(114 44.6 32.4)"/><ellipse cx="48.5" cy="25.1" rx="5" ry="2.2" transform="rotate(86 48.5 25.1)"/><ellipse cx="48.5" cy="16.9" rx="5" ry="2.2" transform="rotate(58 48.5 16.9)"/><ellipse cx="44.6" cy="9.6" rx="5" ry="2.2" transform="rotate(30 44.6 9.6)"/></svg>`;
 const GIFT = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 8h18v4H3zM4 12h7v9H4zM13 12h7v9h-7zM11 8h2v13h-2zM12 8C9 8 7 4 9 3s3 3 3 5zm0 0c3 0 5-4 3-5s-3 3-3 5z"/></svg>';
