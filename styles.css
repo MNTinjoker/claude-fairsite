@@ -98,7 +98,6 @@ button { font: inherit; cursor: pointer; }
 .landing { position: fixed; inset: 0; }
 .landing svg { width: 100%; height: 100%; display: block; }
 .landing .tall { display: none; }
-.landing .tall .hot-label { font-size: 56px; }
 @media (max-aspect-ratio: 4/5) {
   .landing .wide { display: none; }
   .landing .tall { display: block; }
@@ -109,9 +108,16 @@ button { font: inherit; cursor: pointer; }
   pointer-events: all; transition: stroke .2s, filter .2s;
 }
 .hot:hover, .hot:focus { stroke: rgba(255, 255, 255, .9); filter: drop-shadow(0 0 14px rgba(255, 255, 255, .6)); outline: none; }
-.hot-label { fill: var(--text); font-size: 30px; font-weight: 700; text-anchor: middle; pointer-events: none; opacity: 0; transition: opacity .2s; paint-order: stroke; stroke: #000; stroke-width: 6px; }
+/* Segment names: dark glass pills like the rest of the UI */
+.hot-label { pointer-events: none; opacity: 0; transition: opacity .35s; }
+.hot-label rect { fill: rgba(24, 24, 26, .78); stroke: rgba(255, 255, 255, .22); stroke-width: 1.5; }
+.hot-label text { fill: var(--text); font-weight: 700; text-anchor: middle; }
 .hotgroup:hover .hot-label, .hotgroup:focus-within .hot-label { opacity: 1; }
-@media (hover: none) { .hot-label { opacity: .9; } }
+@media (hover: none) { .hot-label { opacity: .95; } }
+/* Intro tour: dim everything, light one segment at a time */
+.touring .hotgroup .hot-label { opacity: 0; }
+.touring .hotgroup.lit .hot-label { opacity: 1; }
+.hotgroup.lit .hot { stroke: rgba(255, 255, 255, .95); filter: drop-shadow(0 0 18px rgba(255, 255, 255, .75)); }
 
 /* Inner pages */
 .page { min-height: 100%; padding: 80px 16px 32px; max-width: 1000px; margin: 0 auto; }
@@ -189,4 +195,21 @@ video, .tour-embed { width: 100%; max-height: 70vh; border-radius: var(--radius)
 }
 .home-fab { display: flex; align-items: center; gap: 6px; }
 .home-fab img { height: 18px; }
-.intro { text-shadow: 0 2px 12px rgba(0, 0, 0, .85), 0 0 2px rgba(0, 0, 0, .9); }
+.intro { position: relative; isolation: isolate; text-shadow: 0 1px 8px rgba(0, 0, 0, .6); }
+/* Soft dark blur behind the text that fades out at the edges (no hard box) */
+.intro::before {
+  content: ''; position: absolute; inset: -14% -18%; z-index: -1;
+  background: radial-gradient(closest-side, rgba(0, 0, 0, .72), rgba(0, 0, 0, .45) 55%, transparent);
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  -webkit-mask-image: radial-gradient(closest-side, #000 45%, transparent);
+  mask-image: radial-gradient(closest-side, #000 45%, transparent);
+}
+
+/* Landing poster */
+.modal.poster-modal { cursor: pointer; background: rgba(0, 0, 0, .75); align-content: center; gap: 12px; }
+.poster img { display: block; max-width: min(92vw, 1100px); max-height: 82vh; border-radius: var(--radius); box-shadow: 0 30px 80px rgba(0, 0, 0, .6); }
+.poster-hint { margin: 0; text-align: center; color: var(--muted); font-size: 13px; animation: pulse 1.6s ease-in-out infinite; }
+@keyframes pulse { 50% { opacity: .4; } }
+html, body { overflow-x: hidden; }
+.login { overflow-x: clip; }
+@media (max-aspect-ratio: 1/1) { .intro::before { inset: -10% -4%; } }

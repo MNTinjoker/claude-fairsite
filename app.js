@@ -124,28 +124,74 @@ function renderLogin(mode = 'up') {
   };
 }
 
+// Label as a glass pill. fs = font size in the svg's own units; tall=true nudges labels further off the shapes.
+const hotLabel = (h, fs, tall) => {
+  const w = h.label.length * fs * 0.55 + fs * 1.6, ht = fs * 1.7;
+  const y = h.ly + (tall ? (h.ly < 400 ? -24 : 18) : 0);
+  // Narrow phones crop the sides of the tall image (visible ≈ 420..1500 here), so pull edge labels inward.
+  const x = tall ? Math.min(Math.max(h.lx, 420 + w / 2), 1500 - w / 2) : h.lx;
+  return `<g class="hot-label" transform="translate(${x} ${y})">
+    <rect x="${-w / 2}" y="${-ht * 0.68}" width="${w}" height="${ht}" rx="${ht / 2}"/>
+    <text font-size="${fs}">${h.label}</text></g>`;
+};
+const hotspots = (fs, tall) => HOTSPOTS.map((h) => `
+  <a href="#/${h.route}" class="hotgroup" data-route="${h.route}" aria-label="${h.label}">
+    <g class="hot" tabindex="-1">${h.shape}</g>${hotLabel(h, fs, tall)}
+  </a>`).join('');
+
 function renderLanding() {
-  const hotspots = HOTSPOTS.map((h) => `
-          <a href="#/${h.route}" class="hotgroup" aria-label="${h.label}">
-            <g class="hot" tabindex="-1">${h.shape}</g>
-            <text class="hot-label" x="${h.lx}" y="${h.ly}">${h.label}</text>
-          </a>`).join('');
   // Wide screens use the 1916x821 image; portrait phones use the 941x1672 one. The mobile image has the
   // same shapes, smaller and lower, so the same hotspots are reused through one transform.
   view.innerHTML = `
     <section class="landing">
       <svg viewBox="0 0 1916 821" preserveAspectRatio="xMidYMid slice" class="land wide">
         <image href="assets/landing-bg.webp" width="1916" height="821"/>
-        ${hotspots}
+        ${hotspots(28, false)}
       </svg>
       <svg viewBox="0 0 941 1672" preserveAspectRatio="xMidYMid slice" class="land tall">
         <image href="assets/landing-bg-mobile.webp" width="941" height="1672"/>
-        <g transform="translate(-193 659) scale(0.69)">${hotspots}</g>
+        <g transform="translate(-193 659) scale(0.69)">${hotspots(50, true)}</g>
       </svg>
     </section>`;
-  if (needsSurvey()) showSurvey();
+  let seen = false;
+  try { seen = sessionStorage.getItem('poster-seen') === '1'; } catch {}
+  if (seen) { if (needsSurvey()) showSurvey(); return; }
+  showPoster();
 }
 
+// Poster once per visit; a tap anywhere closes it and starts the segment tour.
+function showPoster() {
+  const m = $('#modal');
+  m.innerHTML = `
+    <picture class="poster">
+      <source media="(max-aspect-ratio: 1/1)" srcset="assets/poster-tall.webp">
+      <img src="assets/poster-wide.webp" alt="سبز بازی کن، سبز فکر کن!">
+    </picture>
+    <p class="poster-hint">برای ادامه هر جای صفحه را لمس کن</p>`;
+  m.classList.add('poster-modal');
+  m.hidden = false;
+  m.onclick = () => {
+    m.onclick = null; m.hidden = true; m.classList.remove('poster-modal');
+    try { sessionStorage.setItem('poster-seen', '1'); } catch {}
+    tourSegments();
+  };
+}
+
+// Light each segment in turn with its name, then hand the page back.
+function tourSegments() {
+  const routes = [...new Set(HOTSPOTS.map((h) => h.route))];
+  const land = $('.landing');
+  if (!land) return;
+  land.classList.add('touring');
+  routes.forEach((r, i) => setTimeout(() => {
+    land.querySelectorAll('.hotgroup').forEach((g) => g.classList.toggle('lit', g.dataset.route === r));
+  }, i * 1300));
+  setTimeout(() => {
+    land.classList.remove('touring');
+    land.querySelectorAll('.lit').forEach((g) => g.classList.remove('lit'));
+    if (needsSurvey()) showSurvey();
+  }, routes.length * 1300);
+}
 
 function renderSegment(key) {
   const seg = SEGMENTS[key];
