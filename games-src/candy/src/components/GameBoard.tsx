@@ -254,17 +254,10 @@ export const GameBoard: React.FC<GameBoardProps> = ({
       boardRef.current = fallenBoard;
       setBoard(fallenBoard);
 
-      // Unlock player input early so the player can chain rushed moves without waiting!
-      isProcessingRef.current = false;
-      setIsProcessing(false);
-
-      // Ultra-snappy 55ms cascade rhythm for chain reactions
+      // Keep input locked until the whole cascade settles: a swap made mid-cascade was checked against a
+      // board that still had pending matches, so gems the player did not match could pop.
       await new Promise((resolve) => setTimeout(resolve, 55));
-
-      // Check for chain reaction cascades on the latest board
-      if (checkMatches(boardRef.current).matchedGems.length > 0) {
-        processMatchesAndCascades(boardRef.current, undefined, undefined, currentCombo + 1);
-      }
+      processMatchesAndCascades(boardRef.current, undefined, undefined, currentCombo + 1);
     },
     [tileSize, boardSize, onScoreUpdate]
   );
@@ -334,8 +327,6 @@ export const GameBoard: React.FC<GameBoardProps> = ({
       const fallen = applyGravityAndRefill(newBoard);
       boardRef.current = fallen;
       setBoard(fallen);
-      isProcessingRef.current = false;
-      setIsProcessing(false);
 
       await new Promise((resolve) => setTimeout(resolve, 50));
       processMatchesAndCascades(boardRef.current, undefined, undefined, 2);
@@ -384,8 +375,6 @@ export const GameBoard: React.FC<GameBoardProps> = ({
       const fallen = applyGravityAndRefill(newBoard);
       boardRef.current = fallen;
       setBoard(fallen);
-      isProcessingRef.current = false;
-      setIsProcessing(false);
 
       await new Promise((resolve) => setTimeout(resolve, 50));
       processMatchesAndCascades(boardRef.current, undefined, undefined, 2);
