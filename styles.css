@@ -114,7 +114,10 @@ button { font: inherit; cursor: pointer; }
   fill: rgba(24, 24, 26, .78); stroke: #5cff8a; stroke-width: 2.5;
   filter: drop-shadow(0 0 6px rgba(57, 255, 106, .85)) drop-shadow(0 0 14px rgba(57, 255, 106, .45));
 }
-.hot-label text { fill: var(--text); font-weight: 700; text-anchor: middle; }
+.hot-label text {
+  fill: #eafff0; font-weight: 700; text-anchor: middle;
+  filter: drop-shadow(0 0 3px #39ff6a) drop-shadow(0 0 8px rgba(57, 255, 106, .8)) drop-shadow(0 0 16px rgba(57, 255, 106, .5));
+}
 .hotgroup:hover .hot-label, .hotgroup:focus-within .hot-label { opacity: 1; }
 @media (hover: none) { .hot-label { opacity: .95; } }
 /* Intro tour: dim everything, light one segment at a time */

@@ -279,7 +279,7 @@ const QuizAnalytics = ({ questions, selectedAnswers, lang }: { questions: Questi
           x={0}
           y={0}
           textAnchor={x > cx ? 'start' : x < cx ? 'end' : 'middle'}
-          fill="#334155"
+          fill="#d4d4d8"
           fontSize="9px"
           fontWeight="800"
         >
@@ -302,21 +302,21 @@ const QuizAnalytics = ({ questions, selectedAnswers, lang }: { questions: Questi
           <div className="w-full h-72">
             <ReResponsiveContainer width="100%" height="100%">
               <ReRadarChart cx="50%" cy="50%" outerRadius="60%" data={radarData}>
-                <RePolarGrid stroke="#e2e8f0" strokeDasharray="3 3" />
+                <RePolarGrid stroke="#2a2a2d" strokeDasharray="3 3" />
                 <RePolarAngleAxis 
                   dataKey="subject" 
                   tick={renderPolarAngleAxisTick}
                 />
-                <RePolarRadiusAxis angle={30} domain={[0, 100]} tick={{ fontSize: 8, fill: '#94a3b8' }} stroke="#f1f5f9" />
+                <RePolarRadiusAxis angle={30} domain={[0, 100]} tick={{ fontSize: 8, fill: '#8e8e93' }} stroke="#2a2a2d" />
                 <ReTooltip 
                   contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)', fontSize: '11px', fontWeight: '700' }}
                 />
                 <ReRadar
                   name={t('درصد تسلط', 'Mastery %')}
                   dataKey="A"
-                  stroke="#4f46e5"
+                  stroke="#39ff6a"
                   strokeWidth={3}
-                  fill="#6366f1"
+                  fill="#5cff8a"
                   fillOpacity={0.5}
                   animationDuration={1500}
                 />
@@ -351,11 +351,11 @@ const QuizAnalytics = ({ questions, selectedAnswers, lang }: { questions: Questi
                     <stop offset="95%" stopColor="#e11d48" stopOpacity={0.9}/>
                   </linearGradient>
                 </defs>
-                <ReCartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                <ReXAxis dataKey="name" tick={{ fill: '#475569', fontSize: 11, fontWeight: 700 }} axisLine={false} tickLine={false} />
-                <ReYAxis domain={[0, 100]} axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#94a3b8' }} />
+                <ReCartesianGrid strokeDasharray="3 3" vertical={false} stroke="#2a2a2d" />
+                <ReXAxis dataKey="name" tick={{ fill: '#b4b4b8', fontSize: 11, fontWeight: 700 }} axisLine={false} tickLine={false} />
+                <ReYAxis domain={[0, 100]} axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#8e8e93' }} />
                 <ReTooltip 
-                   cursor={{ fill: '#f8fafc' }}
+                   cursor={{ fill: '#232325' }}
                    contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)', fontSize: '11px', fontWeight: '700' }}
                 />
                 <ReBar dataKey="percentage" radius={[8, 8, 0, 0]} barSize={45} animationDuration={1500}>
@@ -521,13 +521,13 @@ export default function QuizApp() {
   );
 
   const header = (
-    <header className="bg-gradient-to-r from-blue-900 to-indigo-950 text-white py-3 px-4 sm:px-6 shadow-md sticky top-0 z-10">
+    <header className="bg-slate-100 border-b border-slate-200 text-slate-900 py-3 px-4 sm:px-6 shadow-md sticky top-0 z-10">
       <div className="max-w-4xl mx-auto flex justify-between items-center">
         <div className="flex items-center gap-3">
           <div className="bg-white dark:bg-slate-900 p-1 rounded-lg shadow-sm">
             <img src="https://parspmi.ir/uploads/1415f666299340028696c2a8f118f236.png" alt="Pars PMI Logo" className="h-8 sm:h-10 object-contain" />
           </div>
-          <div className="font-bold text-white text-sm sm:text-base leading-normal">
+          <div className="font-bold text-slate-900 text-sm sm:text-base leading-normal">
             {t('سامانه آزمون مدیریت پروژه پایدار', 'Sustainable Project Management Exam')}
           </div>
         </div>
