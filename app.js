@@ -12,6 +12,10 @@ const SEGMENTS = {
   quiz:   { title: 'تست دانش',    activity: 'test:knowledge', src: 'games/quiz/index.html' },
 };
 
+// Soft blur behind labels as an SVG filter (iOS Safari ignores CSS blur on SVG shapes). Ids differ per
+// SVG because one of the two is display:none, and a reference into a hidden SVG does not render.
+const labelBlur = (id, sd) => `<defs><filter id="${id}" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="${sd}"/></filter></defs>`;
+
 // Hotspots traced over the 1916x821 background image.
 const HOTSPOTS = [
   { route: 'apps',   label: 'اپ‌های ما',  lx: 955,  ly: 110, shape: '<path d="M822 168 L905 132 L995 185 L1082 140 L1086 310 L995 356 L905 302 L824 350 Z"/>' },
@@ -151,7 +155,7 @@ const hotLabel = (h, fs, tall) => {
   // Narrow phones crop the sides of the tall image (visible ≈ 420..1500 here), so pull edge labels inward.
   const x = tall ? Math.min(Math.max(h.lx, 420 + w / 2), 1500 - w / 2) : h.lx;
   return `<g class="hot-label" transform="translate(${x} ${y})">
-    <ellipse cx="0" cy="${-fs * 0.32}" rx="${w * (tall ? 0.6 : 0.7)}" ry="${ht * (tall ? 0.7 : 0.95)}" class="shade"/>
+    <ellipse cx="0" cy="${-fs * 0.32}" rx="${w * (tall ? 0.6 : 0.7)}" ry="${ht * (tall ? 0.7 : 0.95)}" class="shade" filter="url(#${tall ? 'lb-t' : 'lb-w'})"/>
     <text font-size="${fs}">${h.label}</text></g>`;
 };
 const hotspots = (fs, tall) => HOTSPOTS.map((h) => `
@@ -165,10 +169,12 @@ function renderLanding() {
   view.innerHTML = `
     <section class="landing">
       <svg viewBox="0 0 1916 821" preserveAspectRatio="xMidYMid slice" class="land wide">
+        ${labelBlur('lb-w', 10)}
         <image href="assets/landing-bg.webp" width="1916" height="821"/>
         ${hotspots(28, false)}
       </svg>
       <svg viewBox="0 0 941 1672" preserveAspectRatio="xMidYMid slice" class="land tall">
+        ${labelBlur('lb-t', 22)}
         <image href="assets/landing-bg-mobile.webp" width="941" height="1672"/>
         <g transform="translate(-193 659) scale(0.69)">${hotspots(50, true)}</g>
       </svg>
@@ -455,13 +461,15 @@ function showSurvey() {
 /* ---------- Game bridge ----------
    Game/test pages inside the iframe report results with:
      parent.postMessage({ type: 'game-result', percent: 0..100 }, '*')
+     then parent.postMessage({ type: 'game-done' }, '*') once its end animations are over.
 */
 addEventListener('message', (e) => {
-  if (e.origin !== location.origin || e.data?.type !== 'game-result') return;
+  if (e.origin !== location.origin) return;
   const seg = SEGMENTS[location.hash.replace('#/', '')];
   if (!seg) return;
-  submit(seg.activity, Math.round(Number(e.data.percent) || 0))
-    .then(showLeagueSoon);
+  // game-result records the score; game-done comes once the game's end animations are over.
+  if (e.data?.type === 'game-result') submit(seg.activity, Math.round(Number(e.data.percent) || 0));
+  if (e.data?.type === 'game-done') location.hash = '#/league';
 });
 
 /* ---------- Router ---------- */

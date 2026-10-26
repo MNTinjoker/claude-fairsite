@@ -533,7 +533,33 @@ export const CircularWheel: React.FC<Props> = ({
                   className="transition-all duration-150"
                 />
 
-                {/* Curved Quadrant Name Text aligned along the circle arc with Sans font */}
+                {/* Persian titles: straight text rotated to the arc (Safari scrambles RTL text on a textPath) */}
+                {lang === 'fa' ? (() => {
+                  const mid = (quad.textArcStart + quad.textArcEnd) / 2;
+                  const p = polarToCartesian(cx, cy, rRimMid, mid);
+                  const norm = ((mid % 360) + 360) % 360;
+                  const rot = norm > 90 && norm < 270 ? mid - 180 : mid;
+                  return (
+                    <text
+                      x={p.x}
+                      y={p.y}
+                      transform={`rotate(${rot} ${p.x} ${p.y})`}
+                      textAnchor="middle"
+                      dominantBaseline="central"
+                      fontSize="14"
+                      fontWeight="800"
+                      fontFamily="'Vazirmatn', sans-serif"
+                      className="select-none pointer-events-none transition-colors duration-150"
+                      style={{ fill: isEvaluated
+                    ? 'rgba(255, 255, 255, 0.55)'
+                    : isCategoryHovered
+                    ? '#FFFFFF'
+                    : category.color.primary }}
+                    >
+                      {quad.titleFa}
+                    </text>
+                  );
+                })() : (
                 <text
                   direction={lang === 'fa' ? 'rtl' : 'ltr'}
                   className="select-none pointer-events-none transition-colors duration-150"
@@ -563,6 +589,7 @@ export const CircularWheel: React.FC<Props> = ({
                     {lang === 'fa' ? quad.titleFa : quad.titleEn}
                   </textPath>
                 </text>
+                )}
               </g>
 
               {/* Quadrant Dividing Spoke line runs STRICTLY between rSlotsInner and rSlotsOuter */}

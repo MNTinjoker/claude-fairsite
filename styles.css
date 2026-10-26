@@ -140,8 +140,7 @@ button { font: inherit; cursor: pointer; }
 .hot:hover, .hot:focus { stroke: rgba(255, 255, 255, .9); filter: drop-shadow(0 0 14px rgba(255, 255, 255, .6)); outline: none; }
 /* Segment names: dark glass pills like the rest of the UI */
 .hot-label { pointer-events: none; opacity: 0; transition: opacity .35s; }
-.hot-label .shade { fill: #000; opacity: .85; filter: blur(10px); }
-.landing .tall .shade { filter: blur(22px); }
+.hot-label .shade { fill: #000; opacity: .85; }
 .hot-label text {
   fill: #eafff0; font-weight: 700; text-anchor: middle;
   filter: drop-shadow(0 0 3px #39ff6a) drop-shadow(0 0 8px rgba(57, 255, 106, .8)) drop-shadow(0 0 16px rgba(57, 255, 106, .5));
@@ -349,3 +348,7 @@ html, body { overflow-x: hidden; }
 .to-games.in-game:hover { transform: scale(1.04); }
 .page { padding-bottom: 100px; }
 @media (max-width: 480px) { .to-games { font-size: 15px; padding: 13px 26px; } }
+/* Selected yes/no option */
+.opts label { transition: .2s; }
+.opts label:has(input:checked) { color: #5cff8a; background: rgba(57, 255, 106, .12) !important; border-color: #39ff6a !important; box-shadow: 0 0 0 1px #39ff6a inset, 0 0 16px rgba(57, 255, 106, .3); }
+.opts input { accent-color: #39ff6a; }

@@ -51,6 +51,7 @@ export default function App() {
       setGameState(newState);
       if (newState === 'gameover' || newState === 'victory') {
         window.parent?.postMessage({ type: 'game-result', percent: engine.progress() }, '*');
+        setTimeout(() => window.parent?.postMessage({ type: 'game-done' }, '*'), 3000);
       }
     };
 

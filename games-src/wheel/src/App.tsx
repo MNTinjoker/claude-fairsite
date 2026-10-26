@@ -410,12 +410,16 @@ export default function App() {
 
     if (correct === 20) {
       sound.playSuccess();
+      setTimeout(reportDone, 2500);
     } else {
       sound.playError();
       // Let the red/green marks show for a moment, then move wrong answers to their right segments.
       setTimeout(runCorrection, 1400);
     }
   };
+
+  // Tell the host the game is fully over (animations finished), so it can show the league.
+  const reportDone = () => window.parent?.postMessage({ type: 'game-done' }, '*');
 
   // After assessment: fly each wrong card out of its wedge into a wedge of its correct segment
   // (swapping with a card that is also wrong there), one swap at a time, until everything is correct.
@@ -448,7 +452,7 @@ export default function App() {
       const board = placedWordsRef.current;
       let src: { cat: CategoryId; idx: number; word: WordItem } | null = null;
       for (const c of cats) board[c].forEach((w, i) => { if (!src && w && w.categoryId !== c) src = { cat: c, idx: i, word: w }; });
-      if (!src) { blocker.remove(); sound.playSuccess(); return; }
+      if (!src) { blocker.remove(); sound.playSuccess(); setTimeout(reportDone, 2000); return; }
       const { cat, idx, word } = src as { cat: CategoryId; idx: number; word: WordItem };
       const target = word.categoryId;
       let j = board[target].findIndex((w) => !w || w.categoryId !== target);

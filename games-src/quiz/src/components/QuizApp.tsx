@@ -493,6 +493,8 @@ export default function QuizApp() {
     setShowAnswerSheet(false);
     setQuizState('result');
     window.parent?.postMessage({ type: 'game-result', percent: calculateScore().percentage }, '*');
+    // Leave the result screen up for a moment before the host opens the league.
+    setTimeout(() => window.parent?.postMessage({ type: 'game-done' }, '*'), 6000);
   };
 
   useEffect(() => {
