@@ -71,7 +71,38 @@ function toast(msg) {
 async function loadScores() {
   const { data } = await sb.from('scores').select('activity_id, points');
   scores = Object.fromEntries((data || []).map((r) => [r.activity_id, r.points]));
-  $('#total').textContent = Object.values(scores).reduce((a, b) => a + b, 0);
+  $('#total').textContent = fa(Object.values(scores).reduce((a, b) => a + b, 0));
+  if ($('.dock')) $('.dock').outerHTML = dock();
+  const { data: lb } = await sb.rpc('get_leaderboard');
+  const me = lb?.find((r) => r.is_me);
+  $('#rank-txt').textContent = me ? `رتبه‌ی ${fa(me.rank)} از ${fa(lb.length)}` : '';
+}
+
+// Header: current page name and the user's chip.
+const PAGE_NAMES = { '': 'خانه', league: 'لیگ امتیازات', admin: 'پنل مدیریت', apps: 'اپ‌های ما' };
+function updateHeader(h) {
+  const key = h.split('/')[0];
+  $('#crumb').textContent = SEGMENTS[key]?.title || PAGE_NAMES[key] || 'خانه';
+  document.querySelectorAll('#topbar .nav a').forEach((a) => a.classList.toggle('on', a.dataset.r === (key || 'home')));
+  $('#hello').textContent = userName();
+  $('#me-ava').src = avatarSrc({ avatar: user.user_metadata?.avatar, user_id: user.id });
+}
+
+// Landing progress: which parts the user has finished.
+const STEPS = [
+  { route: 'wheel', title: 'دایره وایز', done: () => 'game:wheel' in scores },
+  { route: 'quiz', title: 'تست دانش', done: () => 'test:knowledge' in scores },
+  { route: 'arkanoid', title: 'پارانویید', done: () => 'game:match3' in scores },
+  { route: 'apps', title: 'اپ‌های ما', done: () => Object.keys(scores).some((k) => k.startsWith('tour:')) },
+];
+function dock() {
+  const n = STEPS.filter((s) => s.done()).length;
+  return `
+    <nav class="dock">
+      <div class="dock-head"><b>با هم، آینده‌ای سبزتر می‌سازیم</b><span>${n === STEPS.length ? 'همه را انجام دادی! 🎉' : `${fa(n)} از ${fa(STEPS.length)} بخش`}</span></div>
+      <div class="steps">${STEPS.map((s) => `<a href="#/${s.route}" class="${s.done() ? 'done' : ''}"><i>${s.done() ? '✓' : ''}</i>${s.title}</a>`).join('')}</div>
+      <div class="bar"><span style="width:${(n / STEPS.length) * 100}%"></span></div>
+    </nav>`;
 }
 
 // Only the first play counts; the server ignores repeats.
@@ -159,6 +190,7 @@ function renderLanding() {
         <image href="assets/landing-bg-mobile.webp" width="941" height="1672"/>
         <g transform="translate(-193 659) scale(0.69)">${hotspots(50, true)}</g>
       </svg>
+      ${dock()}
     </section>`;
   let seen = false;
   try { seen = sessionStorage.getItem('poster-seen') === '1'; } catch {}
@@ -217,11 +249,12 @@ const fa = (n) => String(n).replace(/\d/g, (d) => '۰۱۲۳۴۵۶۷۸۹'[d]);
 
 // League: everyone's total and rank, with the current player highlighted.
 // The avatar the user picked at sign-up; older accounts get one derived from their id.
-function avatar(r, cls = '') {
+function avatarSrc(r) {
   let n = r.avatar;
   if (!n) { let h = 0; for (const c of String(r.user_id)) h = (h * 31 + c.charCodeAt(0)) >>> 0; n = (h % 10) + 1; }
-  return `<img class="ava ${cls}" src="assets/avatars/a${n}.webp" alt="">`;
+  return `assets/avatars/a${n}.webp`;
 }
+const avatar = (r, cls = '') => `<img class="ava ${cls}" src="${avatarSrc(r)}" alt="">`;
 const LAUREL = `<svg class="laurel" viewBox="0 0 64 42" fill="currentColor"><ellipse cx="26.2" cy="37.0" rx="5" ry="2.2" transform="rotate(-142 26.2 37.0)"/><ellipse cx="19.4" cy="32.4" rx="5" ry="2.2" transform="rotate(-114 19.4 32.4)"/><ellipse cx="15.5" cy="25.1" rx="5" ry="2.2" transform="rotate(-86 15.5 25.1)"/><ellipse cx="15.5" cy="16.9" rx="5" ry="2.2" transform="rotate(-58 15.5 16.9)"/><ellipse cx="19.4" cy="9.6" rx="5" ry="2.2" transform="rotate(-30 19.4 9.6)"/><ellipse cx="37.8" cy="37.0" rx="5" ry="2.2" transform="rotate(142 37.8 37.0)"/><ellipse cx="44.6" cy="32.4" rx="5" ry="2.2" transform="rotate(114 44.6 32.4)"/><ellipse cx="48.5" cy="25.1" rx="5" ry="2.2" transform="rotate(86 48.5 25.1)"/><ellipse cx="48.5" cy="16.9" rx="5" ry="2.2" transform="rotate(58 48.5 16.9)"/><ellipse cx="44.6" cy="9.6" rx="5" ry="2.2" transform="rotate(30 44.6 9.6)"/></svg>`;
 const GIFT = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 8h18v4H3zM4 12h7v9H4zM13 12h7v9h-7zM11 8h2v13h-2zM12 8C9 8 7 4 9 3s3 3 3 5zm0 0c3 0 5-4 3-5s-3 3-3 5z"/></svg>';
 
@@ -457,7 +490,7 @@ function route() {
   $('#modal').hidden = true;
   if (!user) { $('#topbar').hidden = true; return renderLogin(); }
   $('#topbar').hidden = false;
-  $('#hello').textContent = userName() ? `سلام ${userName()}` : '';
+  updateHeader(location.hash.replace('#/', ''));
   if (!userName()) { view.innerHTML = ''; return showProfile(); }
   const h = location.hash.replace('#/', '');
   if (SEGMENTS[h]) renderSegment(h);

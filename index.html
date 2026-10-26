@@ -6,19 +6,25 @@
   <title>Fair</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;600;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
-  <link rel="stylesheet" href="styles.css?v=13">
+  <link rel="stylesheet" href="styles.css?v=14">
   <link rel="preload" as="image" href="assets/landing-bg.webp" media="(min-aspect-ratio: 4/5)">
   <link rel="preload" as="image" href="assets/landing-bg-mobile.webp" media="(max-aspect-ratio: 4/5)">
   <link rel="icon" href="assets/logo.png">
 </head>
 <body>
   <header id="topbar" hidden>
-    <a href="#/" class="brand"><img src="assets/logo.png" alt="Pars Project"></a>
-    <span id="hello" class="hello"></span>
-    <a href="#/league" class="link">لیگ</a>
-    <a href="#/admin" class="link" id="admin-link" hidden>مدیریت</a>
-    <div class="score">امتیاز: <b id="total">0</b></div>
-    <button id="logout" class="link">خروج</button>
+    <a href="#/" class="brand"><img src="assets/logo.png" alt="Pars Project"><span class="brand-txt"><b>مدیریت پروژه پارس</b><small id="crumb">خانه</small></span></a>
+    <nav class="nav">
+      <a href="#/" data-r="home">خانه</a>
+      <a href="#/league" data-r="league">لیگ</a>
+      <a href="#/admin" data-r="admin" id="admin-link" hidden>مدیریت</a>
+    </nav>
+    <div class="me-chip">
+      <img id="me-ava" class="ava" alt="">
+      <span class="me-txt"><b id="hello"></b><small id="rank-txt"></small></span>
+      <span class="pill"><b id="total">0</b> امتیاز</span>
+    </div>
+    <button id="logout" class="link out" title="خروج" aria-label="خروج"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3M10 16l-4-4 4-4M6 12h10"/></svg></button>
   </header>
 
   <main id="view"></main>
@@ -28,6 +34,6 @@
 
   <script src="vendor/supabase.min.js"></script>
   <script src="config.js?v=2"></script>
-  <script src="app.js?v=13"></script>
+  <script src="app.js?v=14"></script>
 </body>
 </html>
