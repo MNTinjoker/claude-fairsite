@@ -187,6 +187,7 @@ function renderLanding() {
         <image href="assets/landing-bg-mobile.webp" width="941" height="1672"/>
         <g transform="translate(-193 659) scale(0.69)">${hotspots(50, true)}</g>
       </svg>
+      <h2 class="slogan">سبز فکر کن،<br>سبز بازی کن!</h2>
     </section>`;
   let seen = false;
   try { seen = sessionStorage.getItem('poster-seen') === '1'; } catch {}
