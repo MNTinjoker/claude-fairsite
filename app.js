@@ -14,7 +14,16 @@ const SEGMENTS = {
 
 // Soft blur behind labels as an SVG filter (iOS Safari ignores CSS blur on SVG shapes). Ids differ per
 // SVG because one of the two is display:none, and a reference into a hidden SVG does not render.
-const labelBlur = (id, sd) => `<defs><filter id="${id}" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="${sd}"/></filter></defs>`;
+// The green glow on the label letters is an SVG filter too, for the same reason. k scales it to screen size.
+const labelBlur = (id, sd, k) => `<defs>
+  <filter id="${id}" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="${sd}"/></filter>
+  <filter id="${id}-glow" x="-50%" y="-80%" width="200%" height="260%">
+    <feFlood flood-color="#39ff6a"/><feComposite in2="SourceAlpha" operator="in" result="g"/>
+    <feGaussianBlur in="g" stdDeviation="${3 * k}" result="b1"/>
+    <feGaussianBlur in="g" stdDeviation="${8 * k}" result="b2"/>
+    <feGaussianBlur in="g" stdDeviation="${16 * k}" result="b3"/>
+    <feMerge><feMergeNode in="b3"/><feMergeNode in="b2"/><feMergeNode in="b1"/><feMergeNode in="b1"/><feMergeNode in="SourceGraphic"/></feMerge>
+  </filter></defs>`;
 
 // Hotspots traced over the 1916x821 background image.
 const HOTSPOTS = [
@@ -156,7 +165,7 @@ const hotLabel = (h, fs, tall) => {
   const x = tall ? Math.min(Math.max(h.lx, 420 + w / 2), 1500 - w / 2) : h.lx;
   return `<g class="hot-label" transform="translate(${x} ${y})">
     <ellipse cx="0" cy="${-fs * 0.32}" rx="${w * (tall ? 0.6 : 0.7)}" ry="${ht * (tall ? 0.7 : 0.95)}" class="shade" filter="url(#${tall ? 'lb-t' : 'lb-w'})"/>
-    <text font-size="${fs}">${h.label}</text></g>`;
+    <text font-size="${fs}" filter="url(#${tall ? 'lb-t' : 'lb-w'}-glow)">${h.label}</text></g>`;
 };
 const hotspots = (fs, tall) => HOTSPOTS.map((h) => `
   <a href="#/${h.route}" class="hotgroup" data-route="${h.route}" aria-label="${h.label}">
@@ -169,12 +178,12 @@ function renderLanding() {
   view.innerHTML = `
     <section class="landing">
       <svg viewBox="0 0 1916 821" preserveAspectRatio="xMidYMid slice" class="land wide">
-        ${labelBlur('lb-w', 10)}
+        ${labelBlur('lb-w', 10, 1.4)}
         <image href="assets/landing-bg.webp" width="1916" height="821"/>
         ${hotspots(28, false)}
       </svg>
       <svg viewBox="0 0 941 1672" preserveAspectRatio="xMidYMid slice" class="land tall">
-        ${labelBlur('lb-t', 22)}
+        ${labelBlur('lb-t', 22, 2.8)}
         <image href="assets/landing-bg-mobile.webp" width="941" height="1672"/>
         <g transform="translate(-193 659) scale(0.69)">${hotspots(50, true)}</g>
       </svg>
