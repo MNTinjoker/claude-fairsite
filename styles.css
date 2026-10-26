@@ -370,9 +370,18 @@ html, body { overflow-x: hidden; }
     display: block; position: absolute; top: 0; inset-inline: 0; height: 40svh; margin: 0; padding: 78px 16px 0;
     display: grid; place-content: center; text-align: center; pointer-events: none;
     font: 900 clamp(38px, 12vw, 64px)/1.25 Vazirmatn, sans-serif; color: #e6ffee;
-    text-shadow: 0 0 4px #b8ffcb, 0 0 12px #39ff6a, 0 0 28px #39ff6a, 0 0 56px rgba(57, 255, 106, .7);
+    text-shadow: 0 0 3px #b8ffcb, 0 0 10px rgba(57, 255, 106, .8), 0 0 24px rgba(57, 255, 106, .45);
     animation: slogan-in 1s ease-out .2s both, slogan-glow 3s ease-in-out 1.2s infinite;
   }
 }
 @keyframes slogan-in { from { opacity: 0; transform: translateY(-14px) scale(.96); } }
-@keyframes slogan-glow { 50% { text-shadow: 0 0 6px #d9ffe4, 0 0 18px #39ff6a, 0 0 40px #39ff6a, 0 0 80px rgba(57, 255, 106, .8); } }
+@keyframes slogan-glow { 50% { text-shadow: 0 0 4px #d9ffe4, 0 0 14px rgba(57, 255, 106, .9), 0 0 32px rgba(57, 255, 106, .55); } }
+/* Same slogan in the header, laptop only */
+.top-slogan { display: none; }
+@media (min-width: 900px) and (min-aspect-ratio: 4/5) {
+  .top-slogan {
+    display: block; position: absolute; left: 50%; transform: translateX(-50%); pointer-events: none; white-space: nowrap;
+    font: 900 22px Vazirmatn, sans-serif; color: #e6ffee;
+    text-shadow: 0 0 3px #b8ffcb, 0 0 10px rgba(57, 255, 106, .8), 0 0 22px rgba(57, 255, 106, .45);
+  }
+}
