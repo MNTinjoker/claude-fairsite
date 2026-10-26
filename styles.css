@@ -385,3 +385,10 @@ html, body { overflow-x: hidden; }
     text-shadow: 0 0 3px #b8ffcb, 0 0 10px rgba(57, 255, 106, .8), 0 0 22px rgba(57, 255, 106, .45);
   }
 }
+
+/* Finished game: result instead of a replay */
+.done-page .panel { max-width: 440px; margin: 40px auto 0; text-align: center; }
+.done-page .done-logo { height: 72px; filter: drop-shadow(0 0 14px rgba(57, 255, 106, .35)); }
+.done-page h1 { margin: 14px 0 10px; }
+.done-page p { color: var(--muted); }
+.done-page p b { color: #5cff8a; font-size: 1.2em; }

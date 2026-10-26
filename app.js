@@ -10,6 +10,8 @@ const SEGMENTS = {
   wheel:  { title: 'دایره وایز', activity: 'game:wheel',     src: 'games/wheel/index.html' },
   arkanoid: { title: 'پارانویید', activity: 'game:match3', src: 'games/arkanoid/index.html' }, // activity id kept: allowed by submit_score
   quiz:   { title: 'تست دانش',    activity: 'test:knowledge', src: 'games/quiz/index.html' },
+  // Reports a raw score (not a percent); the server adds score / 1000 points.
+  candy:  { title: 'پارس کندی',  activity: 'game:candy',     src: 'games/candy/index.html', raw: true },
 };
 
 // Soft blur behind labels as an SVG filter (iOS Safari ignores CSS blur on SVG shapes). Ids differ per
@@ -31,7 +33,7 @@ const HOTSPOTS = [
   { route: 'wheel',  label: 'دایره وایز', lx: 705, ly: 680, shape: '<path d="M600 428 L812 428 Q852 438 862 520 L872 592 Q872 640 828 632 L758 576 L652 576 L582 632 Q538 640 542 592 L552 520 Q562 438 600 428 Z"/>' },
   { route: 'quiz',   label: 'تست دانش',   lx: 1220, ly: 680, shape: '<ellipse cx="1220" cy="526" rx="138" ry="116"/>' },
   { route: 'arkanoid', label: 'پارانویید', lx: 490,  ly: 220, shape: '<path d="M490 242 Q512 334 607 355 Q512 376 490 472 Q468 376 373 355 Q468 334 490 242 Z"/>' },
-  { route: 'arkanoid', label: 'پارانویید', lx: 1428, ly: 220, shape: '<path d="M1428 242 Q1450 334 1545 355 Q1450 376 1428 472 Q1406 376 1310 355 Q1406 334 1428 242 Z"/>' },
+  { route: 'candy', label: 'پارس کندی', lx: 1428, ly: 220, shape: '<path d="M1428 242 Q1450 334 1545 355 Q1450 376 1428 472 Q1406 376 1310 355 Q1406 334 1428 242 Z"/>' },
 ];
 
 // Profile questions asked at sign-up. Stored in auth user_metadata; a trigger copies them to public.profiles.
@@ -110,8 +112,8 @@ async function submit(activity, percent = null) {
   toast(hi(first ? `+${data} امتیاز` : 'امتیاز فقط برای بار اول ثبت می‌شود'));
 }
 
-// Show the league after every finished game or tour.
-const showLeagueSoon = () => setTimeout(() => { location.hash = '#/league'; }, 2500);
+// After a game or tour ends, the exit button leads to the league once.
+let leagueOnExit = false;
 
 const needsSurvey = () => !('survey' in scores) && Object.keys(scores).length > 0;
 
@@ -232,12 +234,29 @@ function tourSegments() {
 function renderSegment(key) {
   const seg = SEGMENTS[key];
   // Full screen: the game owns the whole viewport; only the back-to-games button floats on top.
+  // Each game can be played once: a finished game shows its result instead.
+  if (seg.activity in scores) return segmentDone(seg);
   $('#topbar').hidden = true;
   view.innerHTML = `
     <section class="fullscreen">
       <iframe src="${seg.src}" title="${seg.title}" allow="autoplay; fullscreen"></iframe>
     </section>`;
-  toast(seg.activity in scores ? `امتیاز ثبت‌شده: ${scores[seg.activity]}` : 'امتیاز: ۱۰ تا ۲۰ بر اساس درصد. فقط بار اول ثبت می‌شود.');
+  toast(seg.raw ? 'هر ۱۰۰۰ امتیاز بازی = ۱ امتیاز. فقط یک بار می‌توانی بازی کنی.' : 'امتیاز: ۱۰ تا ۲۰ بر اساس درصد. فقط یک بار می‌توانی بازی کنی.');
+}
+
+function segmentDone(seg) {
+  $('#topbar').hidden = false;
+  $('#to-games').classList.remove('in-game');
+  const pts = scores[seg.activity];
+  view.innerHTML = `
+    <section class="page done-page">
+      <div class="panel">
+        <img src="assets/logo.png" alt="" class="done-logo">
+        <h1>${seg.title}</h1>
+        <p>${pts != null ? `این بازی را انجام دادی و <b>${fa(pts)}</b> امتیاز گرفتی.` : 'این بازی تمام شد.'}</p>
+        <p class="hint">هر بازی فقط یک بار انجام می‌شود.</p>
+      </div>
+    </section>`;
 }
 
 const esc = (v) => String(v ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -405,9 +424,9 @@ function renderTour(id) {
       <p class="note"><a href="#/apps">← بازگشت به اپ‌ها</a></p>
     </section>`;
   const vid = $('#vid');
-  if (vid) vid.onended = () => submit(activity).then(showLeagueSoon);
+  if (vid) vid.onended = () => submit(activity).then(() => { leagueOnExit = true; });
   const w = $('#watched');
-  if (w) w.onclick = () => { w.disabled = true; submit(activity).then(showLeagueSoon); };
+  if (w) w.onclick = () => { w.disabled = true; submit(activity).then(() => { leagueOnExit = true; }); };
 }
 
 // Users who signed up before the profile questions existed answer them once after login.
@@ -478,8 +497,21 @@ addEventListener('message', (e) => {
   const seg = SEGMENTS[location.hash.replace('#/', '')];
   if (!seg) return;
   // game-result records the score; game-done comes once the game's end animations are over.
-  if (e.data?.type === 'game-result') submit(seg.activity, Math.round(Number(e.data.percent) || 0));
-  if (e.data?.type === 'game-done') location.hash = '#/league';
+  if (e.data?.type === 'game-result') {
+    const v = seg.raw ? Number(e.data.score) : Number(e.data.percent);
+    submit(seg.activity, Math.round(v || 0));
+  }
+  if (e.data?.type === 'game-done') {
+    leagueOnExit = true;
+    segmentDone(seg);
+  }
+});
+
+$('#to-games').addEventListener('click', (e) => {
+  if (!leagueOnExit) return;
+  e.preventDefault();
+  leagueOnExit = false;
+  location.hash = '#/league';
 });
 
 /* ---------- Router ---------- */
