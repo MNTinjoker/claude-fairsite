@@ -127,6 +127,8 @@ button { font: inherit; cursor: pointer; }
 /* Landing: background image + clickable shape hotspots in the SAME svg, so they always line up */
 .landing { position: fixed; inset: 0; }
 .landing svg { width: 100%; height: 100%; display: block; }
+/* Wide screens: start the scene below the header so nothing sits under it */
+.landing .wide { position: absolute; top: 80px; height: calc(100% - 80px); }
 .landing .tall { display: none; }
 @media (max-aspect-ratio: 4/5) {
   .landing .wide { display: none; }
