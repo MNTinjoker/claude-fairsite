@@ -8,7 +8,7 @@ let scores = {}; // activity_id -> points
 
 const SEGMENTS = {
   wheel:  { title: 'دایره وایز', activity: 'game:wheel',     src: 'games/wheel/index.html' },
-  arkanoid: { title: 'پارانویید', activity: 'game:match3', src: 'games/arkanoid/index.html', league: true }, // activity id kept: allowed by submit_score
+  arkanoid: { title: 'پارانویید', activity: 'game:match3', src: 'games/arkanoid/index.html' }, // activity id kept: allowed by submit_score
   quiz:   { title: 'تست دانش',    activity: 'test:knowledge', src: 'games/quiz/index.html' },
 };
 
@@ -112,10 +112,9 @@ async function submit(activity, percent = null) {
   if (error) return toast('خطا در ثبت امتیاز');
   await loadScores();
   toast(hi(first ? `+${data} امتیاز` : 'امتیاز فقط برای بار اول ثبت می‌شود'));
-  return first;
 }
 
-// Show the league after a first-time score (and always for segments with league: true).
+// Show the league after every finished game or tour.
 const showLeagueSoon = () => setTimeout(() => { location.hash = '#/league'; }, 2500);
 
 const needsSurvey = () => !('survey' in scores) && Object.keys(scores).length > 0;
@@ -408,9 +407,9 @@ function renderTour(id) {
       <p class="note"><a href="#/apps">← بازگشت به اپ‌ها</a></p>
     </section>`;
   const vid = $('#vid');
-  if (vid) vid.onended = () => submit(activity).then((f) => f && showLeagueSoon());
+  if (vid) vid.onended = () => submit(activity).then(showLeagueSoon);
   const w = $('#watched');
-  if (w) w.onclick = () => { w.disabled = true; submit(activity).then((f) => f && showLeagueSoon()); };
+  if (w) w.onclick = () => { w.disabled = true; submit(activity).then(showLeagueSoon); };
 }
 
 // Users who signed up before the profile questions existed answer them once after login.
@@ -480,7 +479,7 @@ addEventListener('message', (e) => {
   const seg = SEGMENTS[location.hash.replace('#/', '')];
   if (!seg) return;
   submit(seg.activity, Math.round(Number(e.data.percent) || 0))
-    .then((first) => (first || seg.league) && showLeagueSoon());
+    .then(showLeagueSoon);
 });
 
 /* ---------- Router ---------- */
@@ -516,12 +515,16 @@ async function loadRole() {
 route(); // show the login right away; the auth callback re-renders once the session is known
 // Never await Supabase calls inside this callback: supabase-js holds its auth lock while it runs,
 // which stalls signIn/signUp. Show the page first, then load scores in the background.
-sb.auth.onAuthStateChange((_e, session) => {
+sb.auth.onAuthStateChange((event, session) => {
   const was = user?.id;
   user = session?.user || null;
   if (ready && user?.id === was) return;
   ready = true;
-  if (user && !was && location.hash.startsWith('#/login')) location.hash = '#/';
+  // Entering the app always starts on the landing; a fresh login shows the poster again.
+  if (user && !was) {
+    if (event === 'SIGNED_IN') try { sessionStorage.removeItem('poster-seen'); } catch {}
+    history.replaceState(null, '', location.pathname + location.search);
+  }
   route();
   if (!user) { isAdmin = false; $('#admin-link').hidden = true; }
   if (user) setTimeout(async () => {
