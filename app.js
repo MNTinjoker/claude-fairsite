@@ -234,12 +234,11 @@ function tourSegments() {
 
 function renderSegment(key) {
   const seg = SEGMENTS[key];
-  // Full screen: the game owns the whole viewport; only a small home button floats on top.
+  // Full screen: the game owns the whole viewport; only the back-to-games button floats on top.
   $('#topbar').hidden = true;
   view.innerHTML = `
     <section class="fullscreen">
       <iframe src="${seg.src}" title="${seg.title}" allow="autoplay; fullscreen"></iframe>
-      <a href="#/" class="home-fab" aria-label="خانه"><img src="assets/logo.png" alt="">خانه</a>
     </section>`;
   toast(seg.activity in scores ? `امتیاز ثبت‌شده: ${scores[seg.activity]}` : 'امتیاز: ۱۰ تا ۲۰ بر اساس درصد. فقط بار اول ثبت می‌شود.');
 }
@@ -308,7 +307,7 @@ async function renderLeague() {
       <div class="pod p${n} ${r.is_me ? 'me' : ''}">
         <div class="who">${avatar(r, 'big')}<div class="nm">${esc(r.name)}</div><div class="pill">${GIFT}${fa(r.total)}</div></div>
         <div class="box"><div class="top"></div><div class="front">${LAUREL}<b>${fa(n)}</b><span class="shine"></span></div></div>
-      </div>` : `<div class="pod p${n} empty"><div class="box"><div class="top"></div><div class="front">${LAUREL}<b>${fa(n)}</b></div></div></div>`;
+      </div>` : `<div class="pod p${n} vacant"><div class="box"><div class="top"></div><div class="front">${LAUREL}<b>${fa(n)}</b></div></div></div>`;
     $('#lg').innerHTML = `
       <div class="stage"><div class="podium">${pod(rows[1], 2)}${pod(rows[0], 1)}${pod(rows[2], 3)}</div></div>
       <div class="lg-title"><h1>لیگ امتیازات</h1>${me ? `<p>رتبه‌ی تو <b>${fa(rows.find((r) => r.is_me)?.pos ?? me.rank)}</b> از ${fa(rows.length)} نفر</p>` : ''}</div>
@@ -488,9 +487,12 @@ addEventListener('message', (e) => {
 
 function route() {
   $('#modal').hidden = true;
-  if (!user) { $('#topbar').hidden = true; return renderLogin(); }
+  if (!user) { $('#topbar').hidden = true; $('#to-games').hidden = true; return renderLogin(); }
   $('#topbar').hidden = false;
   updateHeader(location.hash.replace('#/', ''));
+  const page = location.hash.replace('#/', '').split('/')[0];
+  $('#to-games').hidden = !page;
+  $('#to-games').classList.toggle('in-game', !!SEGMENTS[page]);
   if (!userName()) { view.innerHTML = ''; return showProfile(); }
   const h = location.hash.replace('#/', '');
   if (SEGMENTS[h]) renderSegment(h);

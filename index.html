@@ -6,16 +6,15 @@
   <title>Fair</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;600;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
-  <link rel="stylesheet" href="styles.css?v=14">
+  <link rel="stylesheet" href="styles.css?v=15">
   <link rel="preload" as="image" href="assets/landing-bg.webp" media="(min-aspect-ratio: 4/5)">
   <link rel="preload" as="image" href="assets/landing-bg-mobile.webp" media="(max-aspect-ratio: 4/5)">
   <link rel="icon" href="assets/logo.png">
 </head>
 <body>
   <header id="topbar" hidden>
-    <a href="#/" class="brand"><img src="assets/logo.png" alt="Pars Project"><span class="brand-txt"><b>مدیریت پروژه پارس</b><small id="crumb">خانه</small></span></a>
+    <div class="brand"><img src="assets/logo.png" alt="Pars Project"><span class="brand-txt"><b>مدیریت پروژه پارس</b><small id="crumb">خانه</small></span></div>
     <nav class="nav">
-      <a href="#/" data-r="home">خانه</a>
       <a href="#/league" data-r="league">لیگ</a>
       <a href="#/admin" data-r="admin" id="admin-link" hidden>مدیریت</a>
     </nav>
@@ -28,12 +27,13 @@
   </header>
 
   <main id="view"></main>
+  <a href="#/" id="to-games" class="to-games" hidden><span class="shine"></span><span class="spark s1">✦</span><span class="spark s2">✦</span><span class="spark s3">✦</span>رفتن به باقی بازی‌ها</a>
 
   <div id="modal" class="modal" hidden></div>
   <div id="toast" class="toast" hidden></div>
 
   <script src="vendor/supabase.min.js"></script>
   <script src="config.js?v=2"></script>
-  <script src="app.js?v=14"></script>
+  <script src="app.js?v=15"></script>
 </body>
 </html>
