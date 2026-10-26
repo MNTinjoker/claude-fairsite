@@ -72,7 +72,6 @@ async function loadScores() {
   const { data } = await sb.from('scores').select('activity_id, points');
   scores = Object.fromEntries((data || []).map((r) => [r.activity_id, r.points]));
   $('#total').textContent = fa(Object.values(scores).reduce((a, b) => a + b, 0));
-  if ($('.dock')) $('.dock').outerHTML = dock();
   const { data: lb } = await sb.rpc('get_leaderboard');
   const me = lb?.find((r) => r.is_me);
   $('#rank-txt').textContent = me ? `رتبه‌ی ${fa(me.rank)} از ${fa(lb.length)}` : '';
@@ -88,22 +87,6 @@ function updateHeader(h) {
   $('#me-ava').src = avatarSrc({ avatar: user.user_metadata?.avatar, user_id: user.id });
 }
 
-// Landing progress: which parts the user has finished.
-const STEPS = [
-  { route: 'wheel', title: 'دایره وایز', done: () => 'game:wheel' in scores },
-  { route: 'quiz', title: 'تست دانش', done: () => 'test:knowledge' in scores },
-  { route: 'arkanoid', title: 'پارانویید', done: () => 'game:match3' in scores },
-  { route: 'apps', title: 'اپ‌های ما', done: () => Object.keys(scores).some((k) => k.startsWith('tour:')) },
-];
-function dock() {
-  const n = STEPS.filter((s) => s.done()).length;
-  return `
-    <nav class="dock">
-      <div class="dock-head"><b>با هم، آینده‌ای سبزتر می‌سازیم</b><span>${n === STEPS.length ? 'همه را انجام دادی! 🎉' : `${fa(n)} از ${fa(STEPS.length)} بخش`}</span></div>
-      <div class="steps">${STEPS.map((s) => `<a href="#/${s.route}" class="${s.done() ? 'done' : ''}"><i>${s.done() ? '✓' : ''}</i>${s.title}</a>`).join('')}</div>
-      <div class="bar"><span style="width:${(n / STEPS.length) * 100}%"></span></div>
-    </nav>`;
-}
 
 // Only the first play counts; the server ignores repeats.
 async function submit(activity, percent = null) {
@@ -189,7 +172,6 @@ function renderLanding() {
         <image href="assets/landing-bg-mobile.webp" width="941" height="1672"/>
         <g transform="translate(-193 659) scale(0.69)">${hotspots(50, true)}</g>
       </svg>
-      ${dock()}
     </section>`;
   let seen = false;
   try { seen = sessionStorage.getItem('poster-seen') === '1'; } catch {}
@@ -503,7 +485,14 @@ function route() {
 }
 
 addEventListener('hashchange', route);
-$('#logout').onclick = () => sb.auth.signOut();
+// Local sign-out clears the session at once, without waiting on the network.
+$('#logout').onclick = async () => {
+  await sb.auth.signOut({ scope: 'local' }).catch(() => {});
+  user = null; isAdmin = false; scores = {};
+  $('#admin-link').hidden = true;
+  history.replaceState(null, '', location.pathname + location.search);
+  route();
+};
 
 let ready = false;
 let isAdmin = false;
