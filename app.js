@@ -8,7 +8,7 @@ let scores = {}; // activity_id -> points
 
 const SEGMENTS = {
   wheel:  { title: 'دایره وایز', activity: 'game:wheel',     src: 'games/wheel/index.html' },
-  arkanoid: { title: 'پارانویید', activity: 'game:match3', src: 'games/arkanoid/index.html' }, // activity id kept: allowed by submit_score
+  arkanoid: { title: 'پارانویید', activity: 'game:match3', src: 'games/arkanoid/index.html', league: true }, // activity id kept: allowed by submit_score
   quiz:   { title: 'تست دانش',    activity: 'test:knowledge', src: 'games/quiz/index.html' },
 };
 
@@ -373,7 +373,9 @@ function showSurvey() {
 addEventListener('message', (e) => {
   if (e.origin !== location.origin || e.data?.type !== 'game-result') return;
   const seg = SEGMENTS[location.hash.replace('#/', '')];
-  if (seg) submit(seg.activity, Math.round(Number(e.data.percent) || 0));
+  if (!seg) return;
+  submit(seg.activity, Math.round(Number(e.data.percent) || 0))
+    .then(() => seg.league && setTimeout(() => { location.hash = '#/league'; }, 2500));
 });
 
 /* ---------- Router ---------- */

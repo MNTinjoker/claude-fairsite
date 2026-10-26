@@ -230,16 +230,6 @@ export const StatusModals: React.FC<StatusModalsProps> = ({
           </div>
 
           <div className="w-full flex flex-col gap-2.5">
-            <button
-              onClick={onNextLevel}
-              data-start="true"
-              className={`w-full py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-bold tracking-wider transition cursor-pointer flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20 ${
-                isFa ? 'font-vazir text-sm' : 'font-arcade text-xs'
-              }`}
-            >
-              <Target className="w-4 h-4" />
-              <span>{isFa ? 'مرحله بعد' : 'NEXT SECTOR'}</span>
-            </button>
 
             <button
               onClick={onToTitle}

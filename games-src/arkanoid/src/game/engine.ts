@@ -295,12 +295,12 @@ export class ArkanoidEngine {
     }
   }
 
-  // Run progress 0-100: cleared levels (of 5) plus share of the current level.
+  // Run progress 0-100: share of the single level's bricks cleared.
   public progress(): number {
     if (this.state === 'victory') return 100;
     const left = this.bricks.filter(b => b.type !== 'gold' && b.hp > 0).length;
     const part = this.levelBricks ? 1 - left / this.levelBricks : 0;
-    return Math.round(((this.level + part) / 5) * 100);
+    return Math.round(part * 100);
   }
 
   private setState(newState: GameState) {
@@ -646,7 +646,7 @@ export class ArkanoidEngine {
     // Win condition check (all non-gold bricks destroyed)
     const destructibleLeft = this.bricks.filter(b => b.type !== 'gold' && b.hp > 0).length;
     if (destructibleLeft === 0 && (!this.boss || this.boss.hp <= 0)) {
-      if (this.level >= 4) { // Finished level 5
+      if (this.level >= 0) { // Single level: clearing it wins
         this.setState('victory');
         soundManager.playLevelComplete();
       } else {
