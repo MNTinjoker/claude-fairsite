@@ -119,15 +119,22 @@ function renderLogin(mode = 'up') {
 }
 
 function renderLanding() {
-  view.innerHTML = `
-    <section class="landing">
-      <svg viewBox="0 0 1916 821" preserveAspectRatio="xMidYMid slice" id="land">
-        <image href="assets/landing-bg.png" width="1916" height="821"/>
-        ${HOTSPOTS.map((h) => `
+  const hotspots = HOTSPOTS.map((h) => `
           <a href="#/${h.route}" class="hotgroup" aria-label="${h.label}">
             <g class="hot" tabindex="-1">${h.shape}</g>
             <text class="hot-label" x="${h.lx}" y="${h.ly}">${h.label}</text>
-          </a>`).join('')}
+          </a>`).join('');
+  // Wide screens use the 1916x821 image; portrait phones use the 941x1672 one. The mobile image has the
+  // same shapes, smaller and lower, so the same hotspots are reused through one transform.
+  view.innerHTML = `
+    <section class="landing">
+      <svg viewBox="0 0 1916 821" preserveAspectRatio="xMidYMid slice" class="land wide">
+        <image href="assets/landing-bg.png" width="1916" height="821"/>
+        ${hotspots}
+      </svg>
+      <svg viewBox="0 0 941 1672" preserveAspectRatio="xMidYMid slice" class="land tall">
+        <image href="assets/landing-bg-mobile.png" width="941" height="1672"/>
+        <g transform="translate(-193 659) scale(0.69)">${hotspots}</g>
       </svg>
     </section>`;
   if (needsSurvey()) showSurvey();

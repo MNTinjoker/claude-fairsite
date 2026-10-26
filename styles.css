@@ -96,6 +96,13 @@ button { font: inherit; cursor: pointer; }
 /* Landing: background image + clickable shape hotspots in the SAME svg, so they always line up */
 .landing { position: fixed; inset: 0; }
 .landing svg { width: 100%; height: 100%; display: block; }
+.landing .tall { display: none; }
+.landing .tall .hot-label { font-size: 56px; }
+@media (max-aspect-ratio: 4/5) {
+  .landing .wide { display: none; }
+  .landing .tall { display: block; }
+  .login::before { background-image: url(assets/landing-bg-mobile.png); }
+}
 .hot {
   fill: transparent; stroke: transparent; stroke-width: 6; cursor: pointer;
   pointer-events: all; transition: stroke .2s, filter .2s;
