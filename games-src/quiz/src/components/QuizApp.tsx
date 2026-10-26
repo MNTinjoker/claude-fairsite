@@ -513,7 +513,7 @@ export default function QuizApp() {
           type="button"
           onClick={() => setLang(l)}
           className={`px-2.5 py-1 rounded-lg text-xs font-extrabold transition-all cursor-pointer ${
-            lang === l ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-200 hover:text-white hover:bg-white/10'
+            lang === l ? 'bg-blue-500 text-black shadow-sm' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-300'
           }`}
         >
           {l === 'fa' ? 'فارسی' : 'EN'}
@@ -527,7 +527,7 @@ export default function QuizApp() {
       <div className="max-w-4xl mx-auto flex justify-between items-center">
         <div className="flex items-center gap-3">
           <div className="bg-white dark:bg-slate-900 p-1 rounded-lg shadow-sm">
-            <img src="logo.png" alt="Pars Project" className="h-8 sm:h-10 object-contain" />
+            <img src="logo.png" alt="Pars Project" className="h-11 sm:h-14 object-contain" />
           </div>
           <div className="font-bold text-slate-900 text-sm sm:text-base leading-normal">
             {t('سامانه آزمون مدیریت پروژه پایدار', 'Sustainable Project Management Exam')}

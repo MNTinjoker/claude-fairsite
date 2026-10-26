@@ -30,7 +30,7 @@ button { font: inherit; cursor: pointer; }
 }
 #topbar::after { content: ''; position: absolute; inset-inline: 18%; bottom: -1px; height: 1px; background: linear-gradient(90deg, transparent, #39ff6a, transparent); opacity: .7; }
 #topbar .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--text); }
-#topbar .brand img { height: 32px; }
+#topbar .brand img { height: 46px; }
 .brand-txt { display: flex; flex-direction: column; line-height: 1.25; border-inline-start: 1px solid var(--line); padding-inline-start: 10px; }
 .brand-txt b { font-size: 14px; font-weight: 800; }
 .brand-txt small { font-size: 12px; color: #5cff8a; }
@@ -51,7 +51,7 @@ button { font: inherit; cursor: pointer; }
 @media (max-width: 720px) {
   #topbar { gap: 8px; padding: 6px 8px; }
   .brand-txt b, .me-txt, #topbar .nav a[data-r="home"] { display: none; }
-  #topbar .brand img { height: 26px; }
+  #topbar .brand img { height: 38px; }
   .brand-txt { border: 0; padding: 0; }
   #topbar .nav { margin: 0; }
   #topbar .nav a { padding: 5px 10px; font-size: 13px; }
@@ -204,14 +204,14 @@ video, .tour-embed { width: 100%; max-height: 70vh; border-radius: var(--radius)
   padding: clamp(12px, 4vh, 48px) clamp(16px, 5vw, 64px);
 }
 .intro { flex: 1 1 0; max-width: 520px; }
-.intro .logo { width: clamp(64px, 9vw, 110px); display: block; margin-bottom: clamp(10px, 2.5vh, 24px); }
+.intro .logo { width: clamp(84px, 12vw, 150px); display: block; margin-bottom: clamp(10px, 2.5vh, 24px); }
 .intro h2 { margin: 0 0 clamp(8px, 2vh, 16px); font-size: clamp(22px, 3.2vw, 40px); line-height: 1.3; font-weight: 800; }
 .intro p { margin: 0; color: #d4d4d8; font-size: clamp(14px, 1.4vw, 18px); line-height: 1.9; }
 .login .panel { flex: 0 1 420px; }
 @media (max-aspect-ratio: 1/1) {
   .login { flex-direction: column; justify-content: flex-start; padding-top: clamp(20px, 6vh, 56px); }
   .intro { flex: none; max-width: 420px; width: 100%; text-align: center; }
-  .intro .logo { margin-inline: auto; width: clamp(56px, 16vw, 90px); }
+  .intro .logo { margin-inline: auto; width: clamp(76px, 22vw, 120px); }
   .intro h2 { font-size: clamp(20px, 6vw, 30px); }
   .intro p { font-size: clamp(13px, 3.6vw, 16px); line-height: 1.8; }
   .login .panel { flex: none; }
@@ -344,7 +344,7 @@ html, body { overflow-x: hidden; }
 @keyframes tg-pulse { 50% { box-shadow: 0 0 0 2px rgba(255, 255, 255, .5) inset, 0 10px 30px rgba(0, 0, 0, .5), 0 0 50px rgba(57, 255, 106, .95); } }
 @keyframes swipe { 0% { transform: translateX(-120%); } 45%, 100% { transform: translateX(120%); } }
 /* Inside a game: smaller and in the corner so it does not cover the game controls */
-.to-games.in-game { bottom: 10px; left: 10px; transform: none; padding: 10px 18px; font-size: 14px; animation: tg-pulse 2.2s ease-in-out infinite; }
+.to-games.in-game { bottom: 10px; left: 10px; transform: none; padding: 8px 18px 8px 10px; font-size: 14px; animation: tg-pulse 2.2s ease-in-out infinite; }
 .to-games.in-game:hover { transform: scale(1.04); }
 .page { padding-bottom: 100px; }
 @media (max-width: 480px) { .to-games { font-size: 15px; padding: 13px 26px; } }
@@ -352,3 +352,12 @@ html, body { overflow-x: hidden; }
 .opts label { transition: .2s; }
 .opts label:has(input:checked) { color: #5cff8a; background: rgba(57, 255, 106, .12) !important; border-color: #39ff6a !important; box-shadow: 0 0 0 1px #39ff6a inset, 0 0 16px rgba(57, 255, 106, .3); }
 .opts input { accent-color: #39ff6a; }
+
+/* Scrollbars in the app palette */
+* { scrollbar-width: thin; scrollbar-color: #39ff6a33 transparent; }
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: linear-gradient(180deg, #5cff8a99, #1fa65a99); border-radius: 99px; border: 2px solid transparent; background-clip: padding-box; }
+::-webkit-scrollbar-thumb:hover { background: linear-gradient(180deg, #5cff8a, #1fa65a); background-clip: padding-box; }
+.to-games .tg-logo { display: none; height: 30px; filter: brightness(0); position: relative; }
+.to-games.in-game .tg-logo { display: block; }

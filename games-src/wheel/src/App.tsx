@@ -32,6 +32,7 @@ interface DragSession {
   currentX: number;
   currentY: number;
   hasMoved: boolean;
+  previewShown?: boolean;
   targetCategory: CategoryId | null;
   targetSlot: number | null;
   isOverWheel: boolean;
@@ -108,6 +109,9 @@ export default function App() {
     y: number;
     fromCategory?: CategoryId;
   } | null>(null);
+  // Drag position is written straight to the preview element (no React re-render per pointer move).
+  const previewRef = useRef<HTMLDivElement | null>(null);
+  const hitFrameRef = useRef<number | null>(null);
   const [hoveredQuadrant, setHoveredQuadrant] = useState<CategoryId | null>(null);
   const [hoveredSlotIndex, setHoveredSlotIndex] = useState<number | null>(null);
   const [isOverWheel, setIsOverWheel] = useState<boolean>(false);
@@ -580,21 +584,28 @@ export default function App() {
       session.currentY = clientY;
 
       if (session.hasMoved) {
-        setDragPreview({
-          word: session.word,
-          x: clientX,
-          y: clientY,
-          fromCategory: session.fromCategory,
-        });
+        if (!session.previewShown) {
+          session.previewShown = true;
+          setDragPreview({ word: session.word, x: clientX, y: clientY, fromCategory: session.fromCategory });
+        }
+        const el = previewRef.current;
+        if (el) { el.style.left = `${clientX}px`; el.style.top = `${clientY - 28}px`; }
 
-        const hit = testWheelHit(clientX, clientY, wheelRotationRef.current);
-        session.isOverWheel = hit.isOverWheel;
-        session.targetCategory = hit.categoryId;
-        session.targetSlot = hit.slotIndex;
-
-        setIsOverWheel(hit.isOverWheel);
-        setHoveredQuadrant(hit.categoryId);
-        setHoveredSlotIndex(hit.slotIndex);
+        // Hit-test at most once per frame, and only touch state when the target changes.
+        if (hitFrameRef.current === null) {
+          hitFrameRef.current = requestAnimationFrame(() => {
+            hitFrameRef.current = null;
+            const s = dragSessionRef.current;
+            if (!s) return;
+            const hit = testWheelHit(s.currentX, s.currentY, wheelRotationRef.current);
+            if (hit.isOverWheel !== s.isOverWheel) setIsOverWheel(hit.isOverWheel);
+            if (hit.categoryId !== s.targetCategory) setHoveredQuadrant(hit.categoryId);
+            if (hit.slotIndex !== s.targetSlot) setHoveredSlotIndex(hit.slotIndex);
+            s.isOverWheel = hit.isOverWheel;
+            s.targetCategory = hit.categoryId;
+            s.targetSlot = hit.slotIndex;
+          });
+        }
       }
     };
 
@@ -604,6 +615,7 @@ export default function App() {
       const session = dragSessionRef.current;
       if (!session) return;
       dragSessionRef.current = null;
+      if (hitFrameRef.current !== null) { cancelAnimationFrame(hitFrameRef.current); hitFrameRef.current = null; }
 
       setDragPreview(null);
       setIsOverWheel(false);
@@ -904,6 +916,7 @@ export default function App() {
       {/* GLOBAL DIRECT-POINTER DRAG PREVIEW AVATAR (rounded-[13px] - 20% less round) */}
       {dragPreview && (
         <div
+          ref={previewRef}
           dir={language === 'fa' ? 'rtl' : 'ltr'}
           style={{
             position: 'fixed',
@@ -913,7 +926,7 @@ export default function App() {
             pointerEvents: 'none',
             zIndex: 99999,
           }}
-          className="rounded-[13px] bg-[#0e1b20]/95 border border-emerald-400 shadow-[0_6px_24px_rgba(0,0,0,0.7)] px-4 py-2.5 text-white select-none whitespace-nowrap min-w-[150px] backdrop-blur-md text-start"
+          className="rounded-[13px] bg-[#0e1b20]/95 border border-emerald-400 shadow-[0_6px_24px_rgba(0,0,0,0.7)] px-4 py-2.5 text-white select-none whitespace-nowrap min-w-[150px] text-start"
         >
           <div className="flex items-center gap-2">
             <span

@@ -68,3 +68,10 @@
 .arcade-glow-gold {
   text-shadow: 0 0 10px rgba(234, 179, 8, 0.8), 0 0 20px rgba(234, 179, 8, 0.4);
 }
+
+/* Scrollbars in the app palette */
+* { scrollbar-width: thin; scrollbar-color: #39ff6a33 transparent; }
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: linear-gradient(180deg, #5cff8a99, #1fa65a99); border-radius: 99px; border: 2px solid transparent; background-clip: padding-box; }
+::-webkit-scrollbar-thumb:hover { background: linear-gradient(180deg, #5cff8a, #1fa65a); background-clip: padding-box; }
