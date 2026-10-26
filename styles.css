@@ -26,7 +26,8 @@ button { font: inherit; cursor: pointer; }
   position: fixed; top: 10px; inset-inline: 10px; z-index: 10;
   display: flex; align-items: center; gap: 16px; padding: 8px 16px; border-radius: 18px;
 }
-#topbar .brand { text-decoration: none; font-weight: 700; }
+#topbar .brand { display: flex; }
+#topbar .brand img { height: 30px; }
 #topbar .score { margin-inline-start: auto; color: var(--muted); }
 #topbar .score b { color: var(--text); }
 #topbar .hello { color: var(--muted); }
@@ -40,7 +41,7 @@ button { font: inherit; cursor: pointer; }
 /* Fixed layer so the image always covers the screen, even when the sign-up form scrolls. */
 .login::before {
   content: ''; position: fixed; inset: 0; z-index: -1;
-  background: url(assets/landing-bg.png) center / cover no-repeat;
+  background: url(assets/landing-bg.webp) center / cover no-repeat;
 }
 .panel {
   width: 100%; max-width: 420px; padding: 24px; border-radius: var(--radius);
@@ -101,7 +102,7 @@ button { font: inherit; cursor: pointer; }
 @media (max-aspect-ratio: 4/5) {
   .landing .wide { display: none; }
   .landing .tall { display: block; }
-  .login::before { background-image: url(assets/landing-bg-mobile.png); }
+  .login::before { background-image: url(assets/landing-bg-mobile.webp); }
 }
 .hot {
   fill: transparent; stroke: transparent; stroke-width: 6; cursor: pointer;
@@ -157,3 +158,35 @@ video, .tour-embed { width: 100%; max-height: 70vh; border-radius: var(--radius)
   position: fixed; bottom: 10px; left: 10px; z-index: 21; padding: 7px 14px; border-radius: 999px;
   color: var(--text); text-decoration: none; font-size: 13px;
 }
+
+/* Login layout: text + login side by side on wide screens (text on the right), stacked on tall ones */
+.login {
+  display: flex; align-items: center; justify-content: center; gap: clamp(24px, 6vw, 96px);
+  padding: clamp(12px, 4vh, 48px) clamp(16px, 5vw, 64px);
+}
+.intro { flex: 1 1 0; max-width: 520px; }
+.intro .logo { width: clamp(64px, 9vw, 110px); display: block; margin-bottom: clamp(10px, 2.5vh, 24px); }
+.intro h2 { margin: 0 0 clamp(8px, 2vh, 16px); font-size: clamp(22px, 3.2vw, 40px); line-height: 1.3; font-weight: 800; }
+.intro p { margin: 0; color: #d4d4d8; font-size: clamp(14px, 1.4vw, 18px); line-height: 1.9; }
+.login .panel { flex: 0 1 420px; }
+@media (max-aspect-ratio: 1/1) {
+  .login { flex-direction: column; justify-content: flex-start; padding-top: clamp(20px, 6vh, 56px); }
+  .intro { flex: none; max-width: 420px; width: 100%; text-align: center; }
+  .intro .logo { margin-inline: auto; width: clamp(56px, 16vw, 90px); }
+  .intro h2 { font-size: clamp(20px, 6vw, 30px); }
+  .intro p { font-size: clamp(13px, 3.6vw, 16px); line-height: 1.8; }
+  .login .panel { flex: none; }
+}
+/* Short landscape screens: tighten the form so it fits without scrolling */
+@media (min-aspect-ratio: 1/1) and (max-height: 760px) {
+  .panel { padding: 18px; }
+  .panel h1 { margin: 12px 0 8px; font-size: 20px; }
+  .panel label { margin: 8px 0 4px; }
+  .panel input, .panel select { padding: 10px 12px; }
+  .field input { padding-inline-start: 40px; }
+  .opts.row label { padding: 9px 12px; }
+  .btn.block { margin-top: 12px; padding: 11px; }
+}
+.home-fab { display: flex; align-items: center; gap: 6px; }
+.home-fab img { height: 18px; }
+.intro { text-shadow: 0 2px 12px rgba(0, 0, 0, .85), 0 0 2px rgba(0, 0, 0, .9); }

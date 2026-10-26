@@ -87,6 +87,11 @@ const needsSurvey = () => !('survey' in scores) && Object.keys(scores).length > 
 function renderLogin(mode = 'up') {
   view.innerHTML = `
     <section class="login">
+      <div class="intro">
+        <img src="assets/logo.png" alt="Pars Project" class="logo">
+        <h2>با هم، آینده‌ای سبزتر می‌سازیم</h2>
+        <p>ما در شرکت مدیریت پروژه پارس باور داریم که یادگیری می‌تواند جذاب و سرگرم‌کننده باشد. به همین دلیل، با ترکیب فناوری، آموزش و بازی، فضایی ساخته‌ایم تا آگاهی درباره محیط‌زیست و کاهش انتشار کربن را به تجربه‌ای متفاوت تبدیل کنیم.</p>
+      </div>
       <form class="panel" id="f">
         <div class="tabs">
           <button type="button" data-m="up" class="${mode === 'up' ? 'on' : ''}">ثبت‌نام</button>
@@ -101,8 +106,9 @@ function renderLogin(mode = 'up') {
   view.querySelectorAll('.tabs button').forEach((b) => { b.onclick = () => renderLogin(b.dataset.m); });
   $('#f').onsubmit = async (e) => {
     e.preventDefault();
-    const err = (m) => { $('#go').disabled = false; $('#err').textContent = m; };
-    $('#go').disabled = true; $('#err').textContent = '';
+    const label = $('#go').textContent;
+    const err = (m) => { $('#go').disabled = false; $('#go').textContent = label; $('#err').textContent = m; };
+    $('#go').disabled = true; $('#go').textContent = 'لطفاً صبر کن...'; $('#err').textContent = '';
     const p = readProfile();
     if (phoneDigits(p.phone).length < 10) return err('شماره تلفن درست نیست.');
     const creds = credsFor(p.name, p.phone);
@@ -129,11 +135,11 @@ function renderLanding() {
   view.innerHTML = `
     <section class="landing">
       <svg viewBox="0 0 1916 821" preserveAspectRatio="xMidYMid slice" class="land wide">
-        <image href="assets/landing-bg.png" width="1916" height="821"/>
+        <image href="assets/landing-bg.webp" width="1916" height="821"/>
         ${hotspots}
       </svg>
       <svg viewBox="0 0 941 1672" preserveAspectRatio="xMidYMid slice" class="land tall">
-        <image href="assets/landing-bg-mobile.png" width="941" height="1672"/>
+        <image href="assets/landing-bg-mobile.webp" width="941" height="1672"/>
         <g transform="translate(-193 659) scale(0.69)">${hotspots}</g>
       </svg>
     </section>`;
@@ -148,7 +154,7 @@ function renderSegment(key) {
   view.innerHTML = `
     <section class="fullscreen">
       <iframe src="${seg.src}" title="${seg.title}" allow="autoplay; fullscreen"></iframe>
-      <a href="#/" class="home-fab" aria-label="خانه">خانه</a>
+      <a href="#/" class="home-fab" aria-label="خانه"><img src="assets/logo.png" alt="">خانه</a>
     </section>`;
   toast(seg.activity in scores ? `امتیاز ثبت‌شده: ${scores[seg.activity]}` : 'امتیاز: ۱۰ تا ۲۰ بر اساس درصد. فقط بار اول ثبت می‌شود.');
 }
@@ -277,12 +283,18 @@ $('#logout').onclick = () => sb.auth.signOut();
 
 let ready = false;
 route(); // show the login right away; the auth callback re-renders once the session is known
-sb.auth.onAuthStateChange(async (_e, session) => {
+// Never await Supabase calls inside this callback: supabase-js holds its auth lock while it runs,
+// which stalls signIn/signUp. Show the page first, then load scores in the background.
+sb.auth.onAuthStateChange((_e, session) => {
   const was = user?.id;
   user = session?.user || null;
   if (ready && user?.id === was) return;
   ready = true;
-  if (user) await loadScores();
   if (user && !was && location.hash.startsWith('#/login')) location.hash = '#/';
   route();
+  if (user) setTimeout(async () => {
+    await loadScores();
+    if (!$('#modal').hidden || !$('.landing')) return;
+    if (needsSurvey()) showSurvey();
+  }, 0);
 });
