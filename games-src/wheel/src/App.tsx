@@ -810,7 +810,7 @@ export default function App() {
           />
 
           {/* Main Puzzle Playfield */}
-          <main className="flex-1 w-full max-w-[1600px] mx-auto px-1 xs:px-2 sm:px-6 py-1 sm:py-2 flex flex-col items-center justify-center relative">
+          <main className="flex-1 w-full max-w-[1600px] mx-auto px-1 xs:px-2 sm:px-6 py-1 sm:py-2 flex flex-col items-center justify-start lg:justify-center relative">
             {/* The Shuffle, Check / Score, and Rotate controls */}
             <WheelControlBar
               onShuffle={handleShuffle}
@@ -824,7 +824,7 @@ export default function App() {
             {/* Central Stage: Flanking Floating Cards & Central Circular Wheel (optimized for dynamic card lengths & mobile scrolling) */}
             <div className="w-full flex flex-col lg:flex-row items-center justify-center gap-2.5 sm:gap-4 xl:gap-8 relative pb-4 sm:pb-8">
               {/* Left Flank: Floating Unplaced Answer Cards (cards expand in length dynamically based on text) */}
-              <div className="w-full lg:w-auto flex flex-wrap justify-center items-center content-center gap-1.5 sm:gap-2.5 py-1 sm:py-2 z-10 max-w-full lg:max-w-[420px] xl:max-w-[460px] order-2 lg:order-1">
+              <div className="w-full lg:w-[300px] xl:w-[420px] 2xl:w-[460px] lg:shrink-0 flex flex-wrap justify-center items-center content-center gap-1.5 sm:gap-2.5 py-1 sm:py-2 z-10 max-w-full order-2 lg:order-1">
                 {leftFlankWords.map((word, idx) => (
                   <FloatingWordCard
                     key={word.id}
@@ -871,7 +871,7 @@ export default function App() {
               </div>
 
               {/* Right Flank: Floating Unplaced Answer Cards (order-3) */}
-              <div className="w-full lg:w-auto flex flex-wrap justify-center items-center content-center gap-1.5 sm:gap-2.5 py-1 sm:py-2 z-10 max-w-full lg:max-w-[420px] xl:max-w-[460px] order-3">
+              <div className="w-full lg:w-[300px] xl:w-[420px] 2xl:w-[460px] lg:shrink-0 flex flex-wrap justify-center items-center content-center gap-1.5 sm:gap-2.5 py-1 sm:py-2 z-10 max-w-full order-3">
                 {rightFlankWords.map((word, idx) => (
                   <FloatingWordCard
                     key={word.id}
