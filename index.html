@@ -6,7 +6,7 @@
   <title>Fair</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;600;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
-  <link rel="stylesheet" href="styles.css?v=9">
+  <link rel="stylesheet" href="styles.css?v=10">
   <link rel="preload" as="image" href="assets/landing-bg.webp" media="(min-aspect-ratio: 4/5)">
   <link rel="preload" as="image" href="assets/landing-bg-mobile.webp" media="(max-aspect-ratio: 4/5)">
   <link rel="icon" href="assets/logo.png">
@@ -15,6 +15,8 @@
   <header id="topbar" hidden>
     <a href="#/" class="brand"><img src="assets/logo.png" alt="Pars Project"></a>
     <span id="hello" class="hello"></span>
+    <a href="#/league" class="link">لیگ</a>
+    <a href="#/admin" class="link" id="admin-link" hidden>مدیریت</a>
     <div class="score">امتیاز: <b id="total">0</b></div>
     <button id="logout" class="link">خروج</button>
   </header>
@@ -26,6 +28,6 @@
 
   <script src="vendor/supabase.min.js"></script>
   <script src="config.js?v=2"></script>
-  <script src="app.js?v=7"></script>
+  <script src="app.js?v=8"></script>
 </body>
 </html>

@@ -205,6 +205,73 @@ function renderSegment(key) {
   toast(seg.activity in scores ? `امتیاز ثبت‌شده: ${scores[seg.activity]}` : 'امتیاز: ۱۰ تا ۲۰ بر اساس درصد. فقط بار اول ثبت می‌شود.');
 }
 
+const esc = (v) => String(v ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const fa = (n) => String(n).replace(/\d/g, (d) => '۰۱۲۳۴۵۶۷۸۹'[d]);
+
+// League: everyone's total and rank, with the current player highlighted.
+async function renderLeague() {
+  view.innerHTML = `<section class="page"><h1>لیگ امتیازات</h1><div class="panel wide-panel" id="lg">در حال بارگذاری...</div></section>`;
+  const { data, error } = await sb.rpc('get_leaderboard');
+  if (!$('#lg')) return;
+  if (error) return ($('#lg').textContent = 'خطا در بارگذاری لیگ');
+  const me = data.find((r) => r.is_me);
+  $('#lg').innerHTML = `
+    ${me ? `<div class="my-rank">رتبه‌ی تو: <b>${fa(me.rank)}</b> از ${fa(data.length)} نفر · امتیاز: <b>${fa(me.total)}</b></div>` : ''}
+    <table class="table">
+      <thead><tr><th>رتبه</th><th>نام</th><th>سازمان</th><th>امتیاز</th></tr></thead>
+      <tbody>${data.map((r) => `
+        <tr class="${r.is_me ? 'me' : ''}">
+          <td>${r.rank <= 3 ? ['🥇', '🥈', '🥉'][r.rank - 1] : fa(r.rank)}</td>
+          <td>${esc(r.name)}</td><td>${esc(r.org)}</td><td><b>${fa(r.total)}</b></td>
+        </tr>`).join('')}</tbody>
+    </table>`;
+}
+
+// Admin: users (scores, reset, delete) and survey answers.
+async function renderAdmin(tab) {
+  if (!isAdmin) await loadRole();
+  if (!isAdmin) return (location.hash = '#/');
+  view.innerHTML = `
+    <section class="page">
+      <h1>پنل مدیریت</h1>
+      <div class="tabs"><a href="#/admin/users" class="${tab === 'users' ? 'on' : ''}">کاربران</a><a href="#/admin/survey" class="${tab === 'survey' ? 'on' : ''}">نظرسنجی</a></div>
+      <div class="panel wide-panel" id="ad">در حال بارگذاری...</div>
+    </section>`;
+  if (tab === 'survey') {
+    const { data, error } = await sb.rpc('admin_survey');
+    if (!$('#ad')) return;
+    if (error) return ($('#ad').textContent = 'خطا: ' + error.message);
+    $('#ad').innerHTML = data.length ? `
+      <table class="table">
+        <thead><tr><th>نام</th><th>سازمان</th><th>شغل</th><th>پاسخ‌ها</th></tr></thead>
+        <tbody>${data.map((r) => `
+          <tr><td>${esc(r.name)}</td><td>${esc(r.org)}</td><td>${esc(r.role)}</td>
+            <td class="answers">${(r.answers || []).map((a) => `<div><span>${esc(a.q)}</span> ${esc(a.a)}</div>`).join('')}</td></tr>`).join('')}</tbody>
+      </table>` : 'هنوز پاسخی ثبت نشده.';
+    return;
+  }
+  const { data, error } = await sb.rpc('admin_list_users');
+  if (!$('#ad')) return;
+  if (error) return ($('#ad').textContent = 'خطا: ' + error.message);
+  $('#ad').innerHTML = data.length ? `
+    <table class="table">
+      <thead><tr><th>نام</th><th>تلفن</th><th>سازمان</th><th>شغل</th><th>دمو</th><th>امتیاز</th><th></th></tr></thead>
+      <tbody>${data.map((u) => `
+        <tr><td>${esc(u.name)}</td><td dir="ltr">${esc(u.phone)}</td><td>${esc(u.org)}</td><td>${esc(u.role)}</td>
+          <td>${u.wants_demo ? 'بله' : 'خیر'}</td><td><b>${fa(u.total)}</b></td>
+          <td class="actions"><button class="link" data-reset="${u.user_id}">ریست امتیاز</button>
+            <button class="link danger" data-del="${u.user_id}">حذف</button></td></tr>`).join('')}</tbody>
+    </table>` : 'هنوز کاربری ثبت‌نام نکرده.';
+  const act = async (fn, id, msg) => {
+    if (!confirm(msg)) return;
+    const { error: e } = await sb.rpc(fn, { p_user: id });
+    toast(e ? 'خطا: ' + e.message : 'انجام شد');
+    renderAdmin('users');
+  };
+  view.querySelectorAll('[data-reset]').forEach((b) => { b.onclick = () => act('admin_reset_score', b.dataset.reset, 'امتیاز و نظرسنجی این کاربر پاک شود؟'); });
+  view.querySelectorAll('[data-del]').forEach((b) => { b.onclick = () => act('admin_delete_user', b.dataset.del, 'حساب این کاربر برای همیشه حذف شود؟'); });
+}
+
 function renderApps() {
   view.innerHTML = `
     <section class="page">
@@ -320,6 +387,8 @@ function route() {
   const h = location.hash.replace('#/', '');
   if (SEGMENTS[h]) renderSegment(h);
   else if (h === 'apps') renderApps();
+  else if (h === 'league') renderLeague();
+  else if (h.startsWith('admin')) renderAdmin(h.split('/')[1] || 'users');
   else if (h.startsWith('apps/')) renderTour(Number(h.split('/')[1]));
   else renderLanding();
 }
@@ -328,6 +397,12 @@ addEventListener('hashchange', route);
 $('#logout').onclick = () => sb.auth.signOut();
 
 let ready = false;
+let isAdmin = false;
+async function loadRole() {
+  const { data } = await sb.rpc('is_admin');
+  isAdmin = data === true;
+  $('#admin-link').hidden = !isAdmin;
+}
 route(); // show the login right away; the auth callback re-renders once the session is known
 // Never await Supabase calls inside this callback: supabase-js holds its auth lock while it runs,
 // which stalls signIn/signUp. Show the page first, then load scores in the background.
@@ -338,7 +413,9 @@ sb.auth.onAuthStateChange((_e, session) => {
   ready = true;
   if (user && !was && location.hash.startsWith('#/login')) location.hash = '#/';
   route();
+  if (!user) { isAdmin = false; $('#admin-link').hidden = true; }
   if (user) setTimeout(async () => {
+    loadRole();
     await loadScores();
     if (!$('#modal').hidden || !$('.landing')) return;
     if (needsSurvey()) showSurvey();

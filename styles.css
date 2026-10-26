@@ -217,3 +217,21 @@ video, .tour-embed { width: 100%; max-height: 70vh; border-radius: var(--radius)
 html, body { overflow-x: hidden; }
 .login { overflow-x: clip; }
 @media (max-aspect-ratio: 1/1) { .intro::before { inset: -10% -4%; } }
+
+/* League + admin tables */
+#topbar .link { text-decoration: none; }
+.wide-panel { max-width: none; overflow-x: auto; }
+.table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.table th { text-align: start; color: var(--muted); font-weight: 600; padding: 10px 8px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+.table td { padding: 10px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.table tr.me td { background: rgba(57, 255, 106, .08); }
+.table tr.me td:first-child { box-shadow: inset 3px 0 0 #39ff6a; }
+.my-rank { margin-bottom: 14px; color: var(--muted); }
+.my-rank b { color: #5cff8a; }
+.answers div { margin-bottom: 6px; }
+.answers span { color: var(--muted); display: block; font-size: 12px; }
+.actions { white-space: nowrap; }
+.link.danger { color: #ff8a8a; }
+.page .tabs { margin-bottom: 14px; }
+.page .tabs a { display: inline-block; padding: 8px 20px; border-radius: 999px; color: var(--muted); text-decoration: none; font-weight: 600; }
+.page .tabs a.on { background: #2c2c2f; color: var(--text); }
