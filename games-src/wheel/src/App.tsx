@@ -412,7 +412,64 @@ export default function App() {
       sound.playSuccess();
     } else {
       sound.playError();
+      // Let the red/green marks show for a moment, then move wrong answers to their right segments.
+      setTimeout(runCorrection, 1400);
     }
+  };
+
+  // After assessment: fly each wrong card out of its wedge into a wedge of its correct segment
+  // (swapping with a card that is also wrong there), one swap at a time, until everything is correct.
+  const runCorrection = () => {
+    const cats = ['economic', 'environmental', 'social', 'governance'] as CategoryId[];
+    const blocker = document.createElement('div');
+    blocker.style.cssText = 'position:fixed;inset:0;z-index:9998;';
+    document.body.appendChild(blocker);
+
+    const slotCenter = (cat: CategoryId, idx: number) => {
+      const el = document.querySelector(`[data-category-id="${cat}"][data-slot-index="${idx}"]`);
+      const r = el?.getBoundingClientRect();
+      return r ? { x: r.left + r.width / 2, y: r.top + r.height / 2 } : { x: innerWidth / 2, y: innerHeight / 2 };
+    };
+    const flyer = (word: WordItem, from: { x: number; y: number }, to: { x: number; y: number }) => {
+      const d = document.createElement('div');
+      d.textContent = language === 'fa' ? word.fa : word.en;
+      d.style.cssText = `position:fixed;left:${from.x}px;top:${from.y}px;z-index:9999;transform:translate(-50%,-50%) scale(1);
+        padding:6px 12px;border-radius:999px;background:rgba(10,20,14,.92);color:#bbf7d0;font:700 13px Vazirmatn,sans-serif;
+        border:1.5px solid #4ade80;box-shadow:0 0 14px rgba(74,222,128,.6);white-space:nowrap;pointer-events:none;
+        transition:left .8s cubic-bezier(.4,0,.2,1),top .8s cubic-bezier(.4,0,.2,1),transform .8s;`;
+      document.body.appendChild(d);
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        d.style.left = `${to.x}px`; d.style.top = `${to.y}px`; d.style.transform = 'translate(-50%,-50%) scale(1.08)';
+      }));
+      return d;
+    };
+
+    const step = () => {
+      const board = placedWordsRef.current;
+      let src: { cat: CategoryId; idx: number; word: WordItem } | null = null;
+      for (const c of cats) board[c].forEach((w, i) => { if (!src && w && w.categoryId !== c) src = { cat: c, idx: i, word: w }; });
+      if (!src) { blocker.remove(); sound.playSuccess(); return; }
+      const { cat, idx, word } = src as { cat: CategoryId; idx: number; word: WordItem };
+      const target = word.categoryId;
+      let j = board[target].findIndex((w) => !w || w.categoryId !== target);
+      if (j < 0) j = 0;
+      const other = board[target][j];
+      const a = slotCenter(cat, idx), b = slotCenter(target, j);
+      const f1 = flyer(word, a, b);
+      const f2 = other ? flyer(other, b, a) : null;
+      sound.playTap();
+      setTimeout(() => {
+        setPlacedWords((prev) => {
+          const next = { ...prev, [cat]: [...prev[cat]], [target]: [...prev[target]] };
+          next[target][j] = word;
+          next[cat][idx] = other;
+          return next;
+        });
+        f1.remove(); f2?.remove();
+        setTimeout(step, 250);
+      }, 850);
+    };
+    step();
   };
 
   // --- RE-ENGINEERED DIRECT-POINTER ENGINE FOR ROCK-SOLID DRAG & DROP & DRAG-OUT ---

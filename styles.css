@@ -110,10 +110,8 @@ button { font: inherit; cursor: pointer; }
 .hot:hover, .hot:focus { stroke: rgba(255, 255, 255, .9); filter: drop-shadow(0 0 14px rgba(255, 255, 255, .6)); outline: none; }
 /* Segment names: dark glass pills like the rest of the UI */
 .hot-label { pointer-events: none; opacity: 0; transition: opacity .35s; }
-.hot-label rect {
-  fill: rgba(24, 24, 26, .78); stroke: #5cff8a; stroke-width: 2.5;
-  filter: drop-shadow(0 0 6px rgba(57, 255, 106, .85)) drop-shadow(0 0 14px rgba(57, 255, 106, .45));
-}
+.hot-label .shade { fill: #000; opacity: .85; filter: blur(10px); }
+.landing .tall .shade { filter: blur(22px); }
 .hot-label text {
   fill: #eafff0; font-weight: 700; text-anchor: middle;
   filter: drop-shadow(0 0 3px #39ff6a) drop-shadow(0 0 8px rgba(57, 255, 106, .8)) drop-shadow(0 0 16px rgba(57, 255, 106, .5));

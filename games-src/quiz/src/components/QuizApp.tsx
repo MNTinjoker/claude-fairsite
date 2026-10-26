@@ -525,7 +525,7 @@ export default function QuizApp() {
       <div className="max-w-4xl mx-auto flex justify-between items-center">
         <div className="flex items-center gap-3">
           <div className="bg-white dark:bg-slate-900 p-1 rounded-lg shadow-sm">
-            <img src="https://parspmi.ir/uploads/1415f666299340028696c2a8f118f236.png" alt="Pars PMI Logo" className="h-8 sm:h-10 object-contain" />
+            <img src="logo.png" alt="Pars Project" className="h-8 sm:h-10 object-contain" />
           </div>
           <div className="font-bold text-slate-900 text-sm sm:text-base leading-normal">
             {t('سامانه آزمون مدیریت پروژه پایدار', 'Sustainable Project Management Exam')}
@@ -543,7 +543,7 @@ export default function QuizApp() {
         <div className="flex-1 flex flex-col items-center justify-center p-4">
           <div className="max-w-xl w-full bg-white dark:bg-slate-900 rounded-2xl shadow-xl p-8 text-center border border-slate-100 dark:border-slate-800/50">
             <div className="mb-6 flex justify-center">
-              <img src="https://parspmi.ir/uploads/1415f666299340028696c2a8f118f236.png" alt="Pars PMI Logo" className="h-20 object-contain" />
+              <img src="logo.png" alt="Pars Project" className="h-20 object-contain" />
             </div>
             <h1 className="text-2xl sm:text-3xl font-black mb-2 text-slate-900 dark:text-white">
               {t('آزمون جامع مدیریت پروژه پایدار', 'Comprehensive Sustainable Project Management Exam')}

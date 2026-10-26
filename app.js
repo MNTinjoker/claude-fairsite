@@ -131,7 +131,7 @@ const hotLabel = (h, fs, tall) => {
   // Narrow phones crop the sides of the tall image (visible ≈ 420..1500 here), so pull edge labels inward.
   const x = tall ? Math.min(Math.max(h.lx, 420 + w / 2), 1500 - w / 2) : h.lx;
   return `<g class="hot-label" transform="translate(${x} ${y})">
-    <rect x="${-w / 2}" y="${-ht * 0.68}" width="${w}" height="${ht}" rx="${ht / 2}"/>
+    <ellipse cx="0" cy="${-fs * 0.32}" rx="${w * (tall ? 0.6 : 0.7)}" ry="${ht * (tall ? 0.7 : 0.95)}" class="shade"/>
     <text font-size="${fs}">${h.label}</text></g>`;
 };
 const hotspots = (fs, tall) => HOTSPOTS.map((h) => `
