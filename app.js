@@ -377,7 +377,9 @@ async function renderLeague(popup = false, onClose) {
   const { data, error } = await sb.rpc('get_leaderboard');
   if (!body.isConnected) return;
   if (error) return (body.innerHTML = '<div class="lg-loading">خطا در بارگذاری لیگ</div>');
-  const draw = () => {
+  // first=false (tab switch): no entrance animations or confetti, so the list swaps instantly.
+  const draw = (first = true) => {
+    body.classList.toggle('quick', !first);
     root.querySelectorAll('.lg-tabs button').forEach((b) => b.classList.toggle('on', b.dataset.t === leagueTab));
     const me = data.find((r) => r.is_me);
     let rows = leagueTab === 'org' && me ? data.filter((r) => r.org === me.org) : data;
@@ -394,21 +396,21 @@ async function renderLeague(popup = false, onClose) {
       <div class="ranks">
         <div class="head"><span>رتبه</span><span>کاربر</span><span>امتیاز</span></div>
         ${rows.map((r, i) => `
-          <div class="row ${r.is_me ? 'me' : ''}" style="--d:${(1 + i * .07).toFixed(2)}s">
+          <div class="row ${r.is_me ? 'me' : ''}" style="--d:${(0.8 + Math.min(i, 10) * .06).toFixed(2)}s">
             <span class="rk r${Math.min(r.pos, 4)}">${r.pos <= 3 ? LAUREL : ''}<b>${fa(r.pos)}</b></span>
             ${avatar(r)}
             <span class="nm">${esc(r.name)}<small>${esc(r.org)}</small></span>
             <span class="pts">${fa(r.total)}</span>
           </div>`).join('')}
       </div>`;
-    if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    if (first && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
       const fx = document.createElement('div');
       fx.className = 'fx';
       body.appendChild(fx);
       confetti(fx, !popup);
     }
   };
-  root.querySelectorAll('.lg-tabs button').forEach((b) => (b.onclick = () => { leagueTab = b.dataset.t; draw(); }));
+  root.querySelectorAll('.lg-tabs button').forEach((b) => (b.onclick = () => { if (leagueTab === b.dataset.t) return; leagueTab = b.dataset.t; draw(false); }));
   draw();
 }
 

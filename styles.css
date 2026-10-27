@@ -334,6 +334,9 @@ html, body { overflow-x: hidden; }
 .ranks .pts { color: #39ff6a; font-weight: 800; font-size: 16px; text-shadow: 0 0 10px rgba(57, 255, 106, .45); }
 @media (max-width: 420px) { .ava.big { width: 50px; height: 50px; } .pod.p1 .ava.big { width: 60px; height: 60px; } .p1 .front { height: 118px; } .p2 .front { height: 86px; } .p3 .front { height: 66px; } .box .front b { font-size: 32px; } .p1 .front b { font-size: 42px; } .box .laurel { width: 76px; } }
 @media (prefers-reduced-motion: reduce) { .lg-card *, .lg-card *::before { animation: none !important; } }
+/* Tab switch: show the other list at once with a short fade instead of replaying the entrance */
+.lg-body.quick .pod, .lg-body.quick .pod .who, .lg-body.quick .lg-title, .lg-body.quick .ranks .row { animation: fadein .2s ease-out both; }
+@keyframes fadein { from { opacity: 0; } }
 .ava-pick { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
 .panel .ava-pick label { margin: 0; cursor: pointer; }
 .ava-pick input { position: absolute; opacity: 0; pointer-events: none; }
