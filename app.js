@@ -440,8 +440,9 @@ function renderApps() {
       <div class="apps">
         ${cfg.APPS.map((a) => `
           <a class="app-btn" href="#/apps/${a.id}">
+            <img src="${a.img}" alt="">
+            <span class="app-name">${a.name} <b dir="ltr">${a.en}</b></span>
             ${'tour:' + a.id in scores ? '<span class="done">✓ دیده شد</span>' : ''}
-            ${a.name}
           </a>`).join('')}
       </div>
       <p class="note">دیدن هر تور ۱۰ امتیاز.</p>
@@ -459,7 +460,7 @@ function renderTour(id) {
                <button class="btn block" id="watched">تور را کامل دیدم</button>`;
   view.innerHTML = `
     <section class="page">
-      <h1>${app.name}</h1>
+      <h1>${app.name} <span dir="ltr">${app.en}</span></h1>
       ${body}
       <p class="note"><a href="#/apps">← بازگشت به اپ‌ها</a></p>
     </section>`;
