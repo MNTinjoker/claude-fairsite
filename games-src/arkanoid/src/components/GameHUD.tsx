@@ -68,16 +68,6 @@ export const GameHUD: React.FC<GameHUDProps> = ({
           )}
         </div>
 
-        {/* Sector / Level */}
-        <div className="bg-slate-950/80 border border-slate-800/80 rounded-lg px-3 py-1.5 backdrop-blur-xs flex items-center gap-1.5">
-          <span className="text-slate-400 text-xs font-semibold tracking-wider">
-            {isFa ? 'بخش' : 'SECTOR'}
-          </span>
-          <span className="arcade-num text-pink-400 font-bold tabular-nums text-sm sm:text-base">
-            {metrics.level}
-          </span>
-        </div>
-
         {/* Lives (Mini Vaus Icons) & Utility Controls */}
         <div className="flex items-center gap-2 sm:gap-3 pointer-events-auto">
           {/* Lives socket */}
@@ -102,7 +92,7 @@ export const GameHUD: React.FC<GameHUDProps> = ({
                 e.currentTarget.blur();
               }}
               tabIndex={-1}
-              className={`p-1.5 rounded-lg border transition cursor-pointer relative ${
+              className={`hidden sm:block p-1.5 rounded-lg border transition cursor-pointer relative ${
                 hasDiagnosticAlert
                   ? 'bg-amber-950/70 border-amber-500 text-amber-300 animate-pulse'
                   : 'bg-slate-900/90 border-slate-800 hover:border-slate-700 text-slate-300 hover:text-cyan-400'
@@ -125,7 +115,7 @@ export const GameHUD: React.FC<GameHUDProps> = ({
                 e.currentTarget.blur();
               }}
               tabIndex={-1}
-              className="p-1.5 rounded-lg bg-slate-900/90 border border-slate-800 hover:border-slate-700 text-slate-300 hover:text-cyan-400 transition cursor-pointer"
+              className="hidden sm:block p-1.5 rounded-lg bg-slate-900/90 border border-slate-800 hover:border-slate-700 text-slate-300 hover:text-cyan-400 transition cursor-pointer"
               aria-label="راهنما / Guide"
               title="Game Guide"
             >
@@ -141,7 +131,7 @@ export const GameHUD: React.FC<GameHUDProps> = ({
                 e.currentTarget.blur();
               }}
               tabIndex={-1}
-              className="p-1.5 rounded-lg bg-slate-900/90 border border-slate-800 hover:border-slate-700 text-slate-300 hover:text-pink-400 transition cursor-pointer"
+              className="hidden sm:block p-1.5 rounded-lg bg-slate-900/90 border border-slate-800 hover:border-slate-700 text-slate-300 hover:text-pink-400 transition cursor-pointer"
               aria-label="تنظیمات / Settings"
               title="Settings"
             >
@@ -156,7 +146,7 @@ export const GameHUD: React.FC<GameHUDProps> = ({
               e.currentTarget.blur();
             }}
             tabIndex={-1}
-            className={`p-1.5 rounded-lg border transition cursor-pointer ${
+            className={`hidden sm:block p-1.5 rounded-lg border transition cursor-pointer ${
               scanlines ? 'bg-cyan-950/50 border-cyan-500 text-cyan-400' : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-slate-200'
             }`}
             aria-label="CRT Mode"

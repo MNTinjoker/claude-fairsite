@@ -77,15 +77,6 @@ export const GuideModal: React.FC<GuideModalProps> = ({ isOpen, onClose, lang })
       color: 'bg-slate-200 text-slate-900',
       descEn: 'Instantly awards one additional reserve Vaus spacecraft life.',
       descFa: 'فوراً یک جان ذخیره جدید به راکت‌های شما اضافه می‌کند.'
-    },
-    {
-      type: 'warp',
-      key: 'W',
-      nameEn: 'Warp Portal',
-      nameFa: 'پرتال جهش کیهانی',
-      color: 'bg-purple-500 text-white',
-      descEn: 'Opens a dimensional hyperspace conduit to instantly warp you to the next sector!',
-      descFa: 'پرتال سرعت‌نور را باز می‌کند و شما را مستقیماً به بخش بعدی کهکشان منتقل می‌نماید!'
     }
   ];
 

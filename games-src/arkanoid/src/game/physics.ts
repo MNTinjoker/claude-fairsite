@@ -152,8 +152,8 @@ export function getRandomPowerUp(): PowerUpType {
   if (roll < 0.70) return 'slow';
   if (roll < 0.82) return 'catch';
   if (roll < 0.92) return 'fireball';
-  if (roll < 0.97) return 'life';
-  return 'warp';
+  // No warp: the game is a single level.
+  return 'life';
 }
 
 /**

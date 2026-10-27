@@ -61,16 +61,6 @@ export const StatusModals: React.FC<StatusModalsProps> = ({
               <span>{isFa ? 'ادامه بازی' : 'RESUME'}</span>
             </button>
 
-            <button
-              onClick={onRestart}
-              className={`w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium transition cursor-pointer flex items-center justify-center gap-2 border border-slate-700 ${
-                isFa ? 'font-vazir text-xs' : 'font-arcade text-xs'
-              }`}
-            >
-              <RotateCcw className="w-4 h-4" />
-              <span>{isFa ? 'شروع مجدد' : 'RESTART RUN'}</span>
-            </button>
-
             {onOpenSettings && (
               <button
                 onClick={onOpenSettings}
@@ -90,16 +80,6 @@ export const StatusModals: React.FC<StatusModalsProps> = ({
                 <span>{isFa ? 'راهنمای پاورآپ‌ها و بازی' : 'Game Guide'}</span>
               </button>
             )}
-
-            <button
-              onClick={onToTitle}
-              className={`w-full py-2.5 rounded-xl bg-transparent hover:bg-slate-800/60 text-slate-400 hover:text-slate-200 font-medium transition cursor-pointer flex items-center justify-center gap-2 ${
-                isFa ? 'font-vazir text-xs' : 'font-arcade text-xs'
-              }`}
-            >
-              <Home className="w-4 h-4" />
-              <span>{isFa ? 'منوی اصلی' : 'MAIN MENU'}</span>
-            </button>
           </div>
         </div>
       )}
@@ -160,26 +140,7 @@ export const StatusModals: React.FC<StatusModalsProps> = ({
           </div>
 
           <div className="w-full flex flex-col gap-2.5">
-            <button
-              onClick={onRestart}
-              data-start="true"
-              className={`w-full py-3 rounded-xl bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white font-bold tracking-wider transition cursor-pointer flex items-center justify-center gap-2 shadow-lg shadow-red-500/20 ${
-                isFa ? 'font-vazir text-sm' : 'font-arcade text-xs'
-              }`}
-            >
-              <RotateCcw className="w-4 h-4" />
-              <span>{isFa ? 'تلاش دوباره' : 'TRY AGAIN'}</span>
-            </button>
 
-            <button
-              onClick={onToTitle}
-              className={`w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium transition cursor-pointer flex items-center justify-center gap-2 border border-slate-700 ${
-                isFa ? 'font-vazir text-xs' : 'font-arcade text-xs'
-              }`}
-            >
-              <Home className="w-4 h-4" />
-              <span>{isFa ? 'منوی اصلی' : 'MAIN MENU'}</span>
-            </button>
           </div>
         </div>
       )}
@@ -230,16 +191,6 @@ export const StatusModals: React.FC<StatusModalsProps> = ({
           </div>
 
           <div className="w-full flex flex-col gap-2.5">
-
-            <button
-              onClick={onToTitle}
-              className={`w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium transition cursor-pointer flex items-center justify-center gap-2 border border-slate-700 ${
-                isFa ? 'font-vazir text-xs' : 'font-arcade text-xs'
-              }`}
-            >
-              <Home className="w-4 h-4" />
-              <span>{isFa ? 'منوی اصلی' : 'MAIN MENU'}</span>
-            </button>
           </div>
         </div>
       )}

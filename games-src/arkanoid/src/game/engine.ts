@@ -156,12 +156,12 @@ export class ArkanoidEngine {
     this.canvasRect = this.canvas.getBoundingClientRect();
 
     const isMobile = this.width < 640;
-    const basePaddleWidth = Math.max(isMobile ? 70 : 85, Math.min(130, this.width * (isMobile ? 0.22 : 0.16)));
+    const basePaddleWidth = this.basePaddleWidth();
     const paddleHeight = Math.max(12, Math.min(18, this.height * 0.024));
 
     if (this.paddle) {
       this.paddle.height = paddleHeight;
-      this.paddle.width = this.activePowerUp === 'expand' ? basePaddleWidth * 1.4 : basePaddleWidth;
+      this.paddle.width = this.activePowerUp === 'expand' ? this.expandedPaddleWidth() : basePaddleWidth;
       this.paddle.y = getPaddleY(this.height, paddleHeight, isMobile);
       this.paddle.x = Math.max(6, Math.min(this.width - this.paddle.width - 6, this.paddle.x * (this.width / oldWidth)));
       this.paddle.targetX = this.paddle.x;
@@ -194,9 +194,28 @@ export class ArkanoidEngine {
     }
   }
 
+  // One source for the paddle size so power-ups always return it to its start width.
+  private basePaddleWidth() {
+    const isMobile = this.width < 640;
+    return Math.max(isMobile ? 70 : 85, Math.min(130, this.width * (isMobile ? 0.22 : 0.16)));
+  }
+
+  private expandedPaddleWidth() {
+    return Math.max(this.basePaddleWidth(), Math.min(this.width * 0.32, 160));
+  }
+
+  // Resize the paddle around its center and keep it inside the walls.
+  private setPaddleWidth(w: number) {
+    const shift = (this.paddle.width - w) / 2;
+    const maxX = Math.max(6, this.width - w - 6);
+    this.paddle.x = Math.max(6, Math.min(maxX, this.paddle.x + shift));
+    this.paddle.targetX = Math.max(6, Math.min(maxX, this.paddle.targetX + shift));
+    this.paddle.width = w;
+  }
+
   private resetPaddle() {
     const isMobile = this.width < 640;
-    const baseWidth = Math.max(isMobile ? 70 : 85, Math.min(130, this.width * (isMobile ? 0.22 : 0.16)));
+    const baseWidth = this.basePaddleWidth();
     const paddleHeight = Math.max(12, Math.min(18, this.height * 0.024));
 
     this.paddle = {
@@ -384,18 +403,28 @@ export class ArkanoidEngine {
   }
 
   private applyPowerUp(type: PowerUpType) {
-    this.activePowerUp = type;
-    this.powerUpTimer = 16; // 16 seconds duration
     soundManager.playPowerupCollect();
     this.addFloatingText(this.paddle.x + this.paddle.width / 2, this.paddle.y - 20, type.toUpperCase(), '#38bdf8');
+
+    // Extra life is instant and leaves the running power-up alone.
+    if (type === 'life' || type === 'warp') {
+      this.lives++;
+      this.addFloatingText(this.paddle.x + this.paddle.width / 2, this.paddle.y - 40, '+1 UP', '#4ade80');
+      this.notifyMetrics();
+      return;
+    }
+
+    // A new timed power-up replaces the old one, so effects never stack unseen.
+    if (this.activePowerUp && this.activePowerUp !== type) this.resetPowerUpEffects();
+    this.activePowerUp = type;
+    this.powerUpTimer = 16; // 16 seconds duration
 
     switch (type) {
       case 'laser':
         this.paddle.hasLaser = true;
         break;
       case 'expand': {
-        const expandedWidth = Math.min(this.width * 0.32, 160);
-        this.paddle.width = expandedWidth;
+        this.setPaddleWidth(this.expandedPaddleWidth());
         this.paddle.squashStretch = 1.3;
         break;
       }
@@ -448,26 +477,22 @@ export class ArkanoidEngine {
           ball.isFireball = true;
         }
         break;
-      case 'life':
-        this.lives++;
-        this.addFloatingText(this.paddle.x + this.paddle.width / 2, this.paddle.y - 40, '+1 UP', '#4ade80');
-        break;
-      case 'warp':
-        this.nextLevel();
-        return;
     }
     this.notifyMetrics();
   }
 
-  private clearPowerUp() {
-    this.activePowerUp = null;
+  private resetPowerUpEffects() {
     this.paddle.hasLaser = false;
     this.paddle.hasCatch = false;
-    const baseWidth = Math.max(76, Math.min(120, this.width * 0.18));
-    this.paddle.width = baseWidth;
+    this.setPaddleWidth(this.basePaddleWidth());
     for (const ball of this.balls) {
       ball.isFireball = false;
     }
+  }
+
+  private clearPowerUp() {
+    this.activePowerUp = null;
+    this.resetPowerUpEffects();
     this.notifyMetrics();
   }
 
