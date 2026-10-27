@@ -148,6 +148,26 @@ let lastPage = null;
 
 const needsSurvey = () => !('survey' in scores) && Object.keys(scores).length > 0;
 
+// Sign-up SMS codes go through the signup-otp edge function (the SMS key stays on the server).
+async function otpCall(body) {
+  try {
+    const r = await fetch(`${cfg.SUPABASE_URL}/functions/v1/signup-otp`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json', apikey: cfg.SUPABASE_ANON_KEY }, body: JSON.stringify(body),
+    });
+    return await r.json();
+  } catch { return { error: 'network' }; }
+}
+const OTP_ERR = {
+  exists: 'این شماره قبلاً ثبت شده. از «ورود» استفاده کن.',
+  bad_phone: 'شماره موبایل درست نیست.',
+  wait: 'کمی صبر کن، کد قبلی تازه فرستاده شده.',
+  sms: 'ارسال پیامک انجام نشد. کمی بعد دوباره امتحان کن.',
+  expired: 'کد منقضی شده. «ارسال دوباره» را بزن.',
+  wrong_code: 'کد درست نیست.',
+  too_many: 'تعداد تلاش زیاد شد. «ارسال دوباره» را بزن.',
+  network: 'ارتباط برقرار نشد. اینترنت را چک کن.',
+};
+
 /* ---------- Views ---------- */
 
 function renderLogin(mode = 'up') {
@@ -165,6 +185,11 @@ function renderLogin(mode = 'up') {
         </div>
         <h1>${mode === 'up' ? 'ساخت حساب' : 'خوش برگشتی'}</h1>
         ${profileFields(mode === 'up')}
+        ${mode === 'up' ? `<div id="otp-box" hidden>
+          <label>کد تایید پیامک‌شده</label>
+          <div class="otp-row"><input id="otp" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="کد ۵ رقمی">
+          <button type="button" class="btn ghost" id="resend">ارسال دوباره</button></div>
+        </div>` : ''}
         <label class="keep"><input type="checkbox" id="keep" ${keepLoggedIn() ? 'checked' : ''}> مرا وارد نگه دار</label>
         <button class="btn block" id="go">${mode === 'up' ? 'ساخت حساب' : 'ورود'}</button>
         <div class="err" id="err"></div>
@@ -192,9 +217,38 @@ function renderLogin(mode = 'up') {
       return;
     }
     if (!profileComplete(p)) return err('لطفاً به همه سوال‌ها جواب بده.');
-    const { data, error } = await sb.auth.signUp({ ...creds, options: { data: p } });
-    if (error) return err(/registered|exists/i.test(error.message) ? 'این شماره قبلاً ثبت شده. از «ورود» استفاده کن.' : error.message);
-    if (!data.session) return err('ثبت‌نام انجام شد ولی ورود نشد. تایید ایمیل در Supabase باید خاموش باشد.');
+    // Sign-up is behind an SMS code: first press sends it, second press checks it and creates the account.
+    if (!otpPhone || phoneDigits(p.phone) !== otpPhone) {
+      const r = await otpCall({ action: 'send', phone: p.phone });
+      if (!r.ok) return err(OTP_ERR[r.error] || 'ارسال کد انجام نشد. دوباره امتحان کن.');
+      otpPhone = phoneDigits(p.phone);
+      $('#otp-box').hidden = false;
+      $('#otp').focus();
+      $('#go').disabled = false; $('#go').textContent = 'تایید کد و ساخت حساب';
+      $('#err').textContent = '';
+      resendTimer();
+      return;
+    }
+    const code = $('#otp').value.trim();
+    if (!code) return err('کد پیامک‌شده را وارد کن.');
+    const r = await otpCall({ action: 'verify', phone: p.phone, code, name: p.name, meta: p });
+    if (!r.ok) return err(OTP_ERR[r.error] || 'ساخت حساب انجام نشد. دوباره امتحان کن.');
+    const { error } = await sb.auth.signInWithPassword(creds);
+    if (error) return err('حساب ساخته شد. از «ورود» وارد شو.');
+  };
+  // Resend after a minute.
+  let otpPhone = null;
+  const resendTimer = () => {
+    const a = $('#resend');
+    let t = 60;
+    a.disabled = true;
+    const tick = () => { a.textContent = t > 0 ? `ارسال دوباره (${fa(t)})` : 'ارسال دوباره'; if (t-- > 0) setTimeout(tick, 1000); else a.disabled = false; };
+    tick();
+  };
+  $('#resend').onclick = async () => {
+    const r = await otpCall({ action: 'send', phone: $('#p-phone').value });
+    $('#err').textContent = r.ok ? '' : (OTP_ERR[r.error] || 'ارسال کد انجام نشد.');
+    if (r.ok) resendTimer();
   };
 }
 

@@ -424,3 +424,10 @@ html, body { overflow-x: hidden; }
 /* "Keep me logged in" on the login form */
 .keep { display: flex; align-items: center; gap: 8px; margin: 14px 0 4px; font-size: 14px; color: var(--muted); cursor: pointer; }
 .keep input { width: 18px; height: 18px; accent-color: #39ff6a; margin: 0; }
+
+/* Sign-up SMS code */
+.otp-row { display: flex; gap: 8px; }
+.otp-row input { flex: 1; text-align: center; letter-spacing: 6px; font-size: 20px; direction: ltr; }
+.otp-row .btn { white-space: nowrap; }
+.btn.ghost { background: rgba(255, 255, 255, .06); color: var(--text); border: 1px solid var(--line); box-shadow: none; padding-inline: 14px; }
+.btn.ghost:disabled { opacity: .55; cursor: default; }
