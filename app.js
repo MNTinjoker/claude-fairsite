@@ -553,6 +553,7 @@ function renderApps() {
       </div>
       <p class="note">دیدن هر تور ۱۰ امتیاز.</p>
     </section>`;
+  toast('هر ویدیو را تا آخر ببینی ۱۰ امتیاز می‌گیری (فقط بار اول).');
 }
 
 function renderTour(id) {
