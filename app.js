@@ -1,5 +1,15 @@
 const cfg = window.APP_CONFIG;
-const sb = supabase.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_ANON_KEY);
+// "Keep me logged in": the session lives in localStorage (survives closing the browser) or, when unticked,
+// in sessionStorage (gone when the tab closes). Reads check both, so existing sessions carry on.
+const keepLoggedIn = () => { try { return localStorage.getItem('keep-login') !== '0'; } catch { return true; } };
+const authStorage = {
+  getItem: (k) => { try { return localStorage.getItem(k) ?? sessionStorage.getItem(k); } catch { return null; } },
+  setItem: (k, v) => { try { (keepLoggedIn() ? localStorage : sessionStorage).setItem(k, v); } catch {} },
+  removeItem: (k) => { try { localStorage.removeItem(k); sessionStorage.removeItem(k); } catch {} },
+};
+const sb = supabase.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_ANON_KEY, {
+  auth: { storage: authStorage, persistSession: true, autoRefreshToken: true },
+});
 const $ = (s) => document.querySelector(s);
 const view = $('#view');
 
@@ -83,10 +93,18 @@ const profileComplete = (p) => p.name && p.phone && p.org && p.role && p.avatar 
 
 // No email/password: the phone number is the account id and name + phone is the password.
 const phoneDigits = (phone) => phone.replace(/[۰-۹]/g, (d) => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d)).replace(/\D/g, '').slice(-10);
+// The name part ignores capital letters and Arabic/Persian ی/ک spelling, so "Amir" and "amir" log in alike.
+const canonName = (name) => name.replace(/\s+/g, ' ').trim().toLowerCase().replace(/[يى]/g, 'ی').replace(/ك/g, 'ک');
 const credsFor = (name, phone) => ({
   email: `u${phoneDigits(phone)}@fair-login.app`,
-  password: `${phoneDigits(phone)}:${name.replace(/\s+/g, ' ').trim()}`,
+  password: `${phoneDigits(phone)}:${canonName(name)}`,
 });
+// Accounts made before that used the name exactly as typed: also try the usual spellings of it.
+const legacyPasswords = (name, phone) => {
+  const n = name.replace(/\s+/g, ' ').trim();
+  const title = n.toLowerCase().replace(/(^|\s)\S/g, (c) => c.toUpperCase());
+  return [...new Set([n, title, n.toLowerCase(), n.toUpperCase()])].map((v) => `${phoneDigits(phone)}:${v}`);
+};
 const userName = () => user?.user_metadata?.name || '';
 const hi = (msg) => (userName() ? `${userName()}، ${msg}` : msg);
 
@@ -147,6 +165,7 @@ function renderLogin(mode = 'up') {
         </div>
         <h1>${mode === 'up' ? 'ساخت حساب' : 'خوش برگشتی'}</h1>
         ${profileFields(mode === 'up')}
+        <label class="keep"><input type="checkbox" id="keep" ${keepLoggedIn() ? 'checked' : ''}> مرا وارد نگه دار</label>
         <button class="btn block" id="go">${mode === 'up' ? 'ساخت حساب' : 'ورود'}</button>
         <div class="err" id="err"></div>
       </form>
@@ -159,9 +178,16 @@ function renderLogin(mode = 'up') {
     $('#go').disabled = true; $('#go').textContent = 'لطفاً صبر کن...'; $('#err').textContent = '';
     const p = readProfile();
     if (phoneDigits(p.phone).length < 10) return err('شماره تلفن درست نیست.');
+    try { localStorage.setItem('keep-login', $('#keep').checked ? '1' : '0'); } catch {}
     const creds = credsFor(p.name, p.phone);
     if (mode === 'in') {
-      const { error } = await sb.auth.signInWithPassword(creds);
+      let { error } = await sb.auth.signInWithPassword(creds);
+      // Older account: find its password, then switch it to the case-insensitive one.
+      for (const pw of legacyPasswords(p.name, p.phone)) {
+        if (!error || pw === creds.password) continue;
+        ({ error } = await sb.auth.signInWithPassword({ email: creds.email, password: pw }));
+        if (!error) sb.auth.updateUser({ password: creds.password }).catch(() => {});
+      }
       if (error) return err('اسم یا شماره درست نیست. اگر بار اول است، «ثبت‌نام» را بزن.');
       return;
     }

@@ -420,3 +420,7 @@ html, body { overflow-x: hidden; }
 .app-btn:hover { border-color: rgba(232, 121, 249, .6); box-shadow: 0 0 24px rgba(217, 70, 239, .3); }
 .app-btn .done { top: 8px; inset-inline-start: 8px; padding: 2px 10px; border-radius: 999px; background: rgba(0, 0, 0, .65); color: #5cff8a; font-size: 12px; }
 @media (max-width: 520px) { .apps { grid-template-columns: repeat(2, 1fr); } .app-btn .app-name { font-size: 13px; } }
+
+/* "Keep me logged in" on the login form */
+.keep { display: flex; align-items: center; gap: 8px; margin: 14px 0 4px; font-size: 14px; color: var(--muted); cursor: pointer; }
+.keep input { width: 18px; height: 18px; accent-color: #39ff6a; margin: 0; }
