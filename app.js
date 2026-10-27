@@ -44,19 +44,19 @@ const ell = (cx, cy, rx, ry) => `<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="$
 const HOTSPOTS = [
   { route: 'apps', label: 'اپ‌های ما',
     w: { lx: 937, ly: 98, shape: '<path d="M797 165 L890 122 L980 175 L1075 130 L1075 315 L980 352 L890 305 L800 342 Z"/>' },
-    t: { lx: 470, ly: 598, shape: '<path d="M362 655 L430 622 L505 660 L575 628 L578 775 L505 808 L430 772 L365 798 Z"/>' } },
+    t: { lx: 470, ly: 572, shape: '<path d="M362 655 L430 622 L505 660 L575 628 L578 775 L505 808 L430 772 L365 798 Z"/>' } },
   { route: 'arkanoid', label: 'پارانویید',
     w: { lx: 482, ly: 196, shape: ell(486, 312, 131, 105) },
-    t: { lx: 185, ly: 668, shape: ell(185, 772, 110, 88) } },
+    t: { lx: 185, ly: 642, shape: ell(185, 772, 110, 88) } },
   { route: 'candy', label: 'پارس کندی',
     w: { lx: 1435, ly: 182, shape: ell(1435, 315, 128, 122) },
-    t: { lx: 762, ly: 668, shape: ell(762, 777, 102, 97) } },
+    t: { lx: 762, ly: 642, shape: ell(762, 777, 102, 97) } },
   { route: 'wheel', label: 'دایره وایز',
     w: { lx: 678, ly: 690, shape: ell(678, 509, 125, 138) },
-    t: { lx: 302, ly: 1125, shape: ell(302, 967, 102, 115) } },
+    t: { lx: 302, ly: 1152, shape: ell(302, 967, 102, 115) } },
   { route: 'quiz', label: 'تست دانش',
     w: { lx: 1197, ly: 690, shape: ell(1197, 510, 130, 135) },
-    t: { lx: 640, ly: 1125, shape: ell(640, 963, 108, 110) } },
+    t: { lx: 640, ly: 1152, shape: ell(640, 963, 108, 110) } },
 ];
 
 // Profile questions asked at sign-up. Stored in auth user_metadata; a trigger copies them to public.profiles.
