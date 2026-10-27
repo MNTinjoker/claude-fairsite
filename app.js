@@ -190,7 +190,7 @@ function renderLogin(mode = 'up') {
           <div class="otp-row"><input id="otp" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="کد ۵ رقمی">
           <button type="button" class="btn ghost" id="resend">ارسال دوباره</button></div>
         </div>` : ''}
-        <label class="keep"><input type="checkbox" id="keep" ${keepLoggedIn() ? 'checked' : ''}> مرا وارد نگه دار</label>
+        <label class="keep"><input type="checkbox" id="keep" ${keepLoggedIn() ? 'checked' : ''}> منو یادت بمونه</label>
         <button class="btn block" id="go">${mode === 'up' ? 'ساخت حساب' : 'ورود'}</button>
         <div class="err" id="err"></div>
       </form>
