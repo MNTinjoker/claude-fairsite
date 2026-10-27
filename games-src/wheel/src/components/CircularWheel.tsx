@@ -137,6 +137,7 @@ export const CircularWheel: React.FC<Props> = ({
   onTogglePause,
   isPaused,
   onQuadrantClick,
+  wheelRotation = 0,
 }) => {
   const [internalHoveredCategory, setInternalHoveredCategory] = useState<CategoryId | null>(null);
   const [internalHoveredSlot, setInternalHoveredSlot] = useState<{ categoryId: CategoryId; index: number } | null>(null);
@@ -169,7 +170,7 @@ export const CircularWheel: React.FC<Props> = ({
   // - RIGHT: Social (45° to 135°)
   // - BOTTOM: Economic (135° to 225°)
   // - LEFT: Governance (225° to 315°)
-  const quadrants: {
+  const baseQuadrants: {
     id: CategoryId;
     startAngle: number;
     endAngle: number;
@@ -225,6 +226,22 @@ export const CircularWheel: React.FC<Props> = ({
       reverseTextArc: true,
     },
   ];
+
+  // Rotate the whole dial by wheelRotation; titles flip so they stay readable in the bottom/left half.
+  const quadrants = baseQuadrants.map((q) => {
+    const c = q.centerAngle + wheelRotation;
+    const n = ((c % 360) + 360) % 360;
+    const rev = n >= 135 && n < 315;
+    return {
+      ...q,
+      startAngle: q.startAngle + wheelRotation,
+      endAngle: q.endAngle + wheelRotation,
+      centerAngle: c,
+      textArcStart: rev ? c + 36 : c - 36,
+      textArcEnd: rev ? c - 36 : c + 36,
+      reverseTextArc: rev,
+    };
+  });
 
   return (
     <div

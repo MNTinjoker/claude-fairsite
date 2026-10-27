@@ -236,9 +236,20 @@ export default function App() {
   }, [appState, inspectedWord]);
 
   // Rotate wheel handler
+  // Turns the dial over ~300ms; a new press finishes the previous turn first.
+  const rotateTarget = useRef(0);
   const handleRotateWheel = (delta: number) => {
     sound.playRotate();
-    setWheelRotation((prev) => prev + delta);
+    const from = rotateTarget.current;
+    const to = (rotateTarget.current += delta);
+    const t0 = performance.now();
+    const step = (t: number) => {
+      const k = Math.min(1, (t - t0) / 300);
+      if (rotateTarget.current !== to) return;
+      setWheelRotation(from + (to - from) * (1 - Math.pow(1 - k, 3)));
+      if (k < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
   };
 
   // Check if a specific word is placed on the wheel
@@ -559,18 +570,19 @@ export default function App() {
 
     // Inside the wheel dial: calculate quadrant and slot index
     const screenAngle = (Math.atan2(dy, dx) * (180 / Math.PI) + 90 + 360) % 360;
-    const wheelAngle = (screenAngle - currentRotation + 3600) % 360;
+    const wheelAngle = (((screenAngle - currentRotation) % 360) + 360) % 360;
 
     let quadId: CategoryId;
     let quadStart: number;
     if (wheelAngle >= 315 || wheelAngle < 45) {
-      quadId = 'economic';
+      // Same layout as CircularWheel: environmental on top, social right, economic bottom, governance left
+      quadId = 'environmental';
       quadStart = 315;
     } else if (wheelAngle >= 45 && wheelAngle < 135) {
-      quadId = 'environmental';
+      quadId = 'social';
       quadStart = 45;
     } else if (wheelAngle >= 135 && wheelAngle < 225) {
-      quadId = 'social';
+      quadId = 'economic';
       quadStart = 135;
     } else {
       quadId = 'governance';

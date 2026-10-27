@@ -49,7 +49,7 @@ export const WheelControlBar: React.FC<Props> = ({
           <RotateCcw className="w-3.5 h-3.5" />
         </button>
         <span className="font-mono text-xs font-semibold text-emerald-400 px-2 sm:px-3 tracking-wider">
-          {((wheelRotation % 360) + 360) % 360}°
+          {((Math.round(wheelRotation) % 360) + 360) % 360}°
         </span>
         <button
           onClick={() => onRotateWheel(90)}
