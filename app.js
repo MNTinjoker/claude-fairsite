@@ -112,8 +112,8 @@ async function submit(activity, percent = null) {
   toast(hi(first ? `+${data} امتیاز` : 'امتیاز فقط برای بار اول ثبت می‌شود'));
 }
 
-// After a game or tour ends, the exit button leads to the league once.
-let leagueOnExit = false;
+// The league pops up over the landing whenever the user comes back from a segment.
+let lastPage = null;
 
 const needsSurvey = () => !('survey' in scores) && Object.keys(scores).length > 0;
 
@@ -174,7 +174,9 @@ const hotspots = (fs, tall) => HOTSPOTS.map((h) => `
     <g class="hot" tabindex="-1">${h.shape}</g>${hotLabel(h, fs, tall)}
   </a>`).join('');
 
-function renderLanding() {
+// Poster once per page load (iOS Safari keeps sessionStorage across reopened tabs, so it would never show again).
+let posterShown = false;
+function renderLanding(quiet = false) {
   // Wide screens use the 1916x821 image; portrait phones use the 941x1672 one. The mobile image has the
   // same shapes, smaller and lower, so the same hotspots are reused through one transform.
   view.innerHTML = `
@@ -191,9 +193,8 @@ function renderLanding() {
       </svg>
       <h2 class="slogan">سبز فکر کن،<br>سبز بازی کن!</h2>
     </section>`;
-  let seen = false;
-  try { seen = sessionStorage.getItem('poster-seen') === '1'; } catch {}
-  if (seen) { if (needsSurvey()) showSurvey(); return; }
+  if (quiet) return;
+  if (posterShown) { if (needsSurvey()) showSurvey(); return; }
   showPoster();
 }
 
@@ -208,9 +209,9 @@ function showPoster() {
     <p class="poster-hint">برای ادامه هر جای صفحه را لمس کن</p>`;
   m.classList.add('poster-modal');
   m.hidden = false;
+  posterShown = true;
   m.onclick = () => {
     m.onclick = null; m.hidden = true; m.classList.remove('poster-modal');
-    try { sessionStorage.setItem('poster-seen', '1'); } catch {}
     tourSegments();
   };
 }
@@ -274,7 +275,7 @@ const LAUREL = `<svg class="laurel" viewBox="0 0 64 42" fill="currentColor"><ell
 const GIFT = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 8h18v4H3zM4 12h7v9H4zM13 12h7v9h-7zM11 8h2v13h-2zM12 8C9 8 7 4 9 3s3 3 3 5zm0 0c3 0 5-4 3-5s-3 3-3 5z"/></svg>';
 
 // Gold confetti: a burst from the podium, then slow drifting sparkles.
-function confetti(box) {
+function confetti(box, keepDrifting = true) {
   const W = box.clientWidth, H = box.clientHeight;
   for (let i = 0; i < 70; i++) {
     const p = document.createElement('i');
@@ -288,7 +289,7 @@ function confetti(box) {
       { transform: `translate(${x0 + dx}px, ${y0 + dy}px) rotate(${180 + Math.random() * 360}deg) scale(1)`, opacity: 1, offset: .35 },
       { transform: `translate(${x0 + dx * 1.2}px, ${H + 40}px) rotate(${540 + Math.random() * 360}deg) scale(.8)`, opacity: 0 },
     ], { duration: 2600 + Math.random() * 1800, delay: 250 + Math.random() * 250, easing: 'cubic-bezier(.15,.7,.4,1)', fill: 'both' })
-      .finished.then(() => drift(p, W, H));
+      .finished.then(() => (keepDrifting ? drift(p, W, H) : p.remove()));
   }
 }
 function drift(p, W, H) {
@@ -302,29 +303,41 @@ function drift(p, W, H) {
 }
 
 let leagueTab = 'all';
-async function renderLeague() {
-  view.innerHTML = `
-    <section class="page league">
+// popup: shown in the modal over the landing (burst confetti only, no endless drift).
+async function renderLeague(popup = false, onClose) {
+  const card = `
       <div class="lg-card">
+        ${popup ? '<button class="lg-close" aria-label="بستن">✕</button>' : ''}
         <div class="lg-tabs"><button data-t="all">همه</button><button data-t="org">سازمان من</button></div>
-        <div id="lg"><div class="lg-loading">در حال بارگذاری...</div></div>
-      </div>
-    </section>`;
+        <div class="lg-body"><div class="lg-loading">در حال بارگذاری...</div></div>
+      </div>`;
+  let root = view;
+  if (popup) {
+    root = $('#modal');
+    root.innerHTML = card;
+    root.className = 'modal league-modal';
+    root.hidden = false;
+    const close = () => { root.hidden = true; root.className = 'modal'; root.onclick = null; root.innerHTML = ''; onClose?.(); };
+    root.onclick = (e) => { if (e.target === root || e.target.closest('.lg-close')) close(); };
+  } else {
+    view.innerHTML = `<section class="page league">${card}</section>`;
+  }
+  const body = root.querySelector('.lg-body');
   const { data, error } = await sb.rpc('get_leaderboard');
-  if (!$('#lg')) return;
-  if (error) return ($('#lg').innerHTML = '<div class="lg-loading">خطا در بارگذاری لیگ</div>');
+  if (!body.isConnected) return;
+  if (error) return (body.innerHTML = '<div class="lg-loading">خطا در بارگذاری لیگ</div>');
   const draw = () => {
-    view.querySelectorAll('.lg-tabs button').forEach((b) => b.classList.toggle('on', b.dataset.t === leagueTab));
+    root.querySelectorAll('.lg-tabs button').forEach((b) => b.classList.toggle('on', b.dataset.t === leagueTab));
     const me = data.find((r) => r.is_me);
     let rows = leagueTab === 'org' && me ? data.filter((r) => r.org === me.org) : data;
     rows = rows.map((r, i) => ({ ...r, pos: i + 1 }));
-    if (!rows.length) return ($('#lg').innerHTML = '<div class="lg-loading">هنوز کسی امتیاز نگرفته. اولین نفر باش!</div>');
+    if (!rows.length) return (body.innerHTML = '<div class="lg-loading">هنوز کسی امتیاز نگرفته. اولین نفر باش!</div>');
     const pod = (r, n) => r ? `
       <div class="pod p${n} ${r.is_me ? 'me' : ''}">
         <div class="who">${avatar(r, 'big')}<div class="nm">${esc(r.name)}</div><div class="pill">${GIFT}${fa(r.total)}</div></div>
         <div class="box"><div class="top"></div><div class="front">${LAUREL}<b>${fa(n)}</b><span class="shine"></span></div></div>
       </div>` : `<div class="pod p${n} vacant"><div class="box"><div class="top"></div><div class="front">${LAUREL}<b>${fa(n)}</b></div></div></div>`;
-    $('#lg').innerHTML = `
+    body.innerHTML = `
       <div class="stage"><div class="podium">${pod(rows[1], 2)}${pod(rows[0], 1)}${pod(rows[2], 3)}</div></div>
       <div class="lg-title"><h1>لیگ امتیازات</h1>${me ? `<p>رتبه‌ی تو <b>${fa(rows.find((r) => r.is_me)?.pos ?? me.rank)}</b> از ${fa(rows.length)} نفر</p>` : ''}</div>
       <div class="ranks">
@@ -340,11 +353,11 @@ async function renderLeague() {
     if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
       const fx = document.createElement('div');
       fx.className = 'fx';
-      $('#lg').appendChild(fx);
-      confetti(fx);
+      body.appendChild(fx);
+      confetti(fx, !popup);
     }
   };
-  view.querySelectorAll('.lg-tabs button').forEach((b) => (b.onclick = () => { leagueTab = b.dataset.t; draw(); }));
+  root.querySelectorAll('.lg-tabs button').forEach((b) => (b.onclick = () => { leagueTab = b.dataset.t; draw(); }));
   draw();
 }
 
@@ -424,9 +437,9 @@ function renderTour(id) {
       <p class="note"><a href="#/apps">← بازگشت به اپ‌ها</a></p>
     </section>`;
   const vid = $('#vid');
-  if (vid) vid.onended = () => submit(activity).then(() => { leagueOnExit = true; });
+  if (vid) vid.onended = () => submit(activity);
   const w = $('#watched');
-  if (w) w.onclick = () => { w.disabled = true; submit(activity).then(() => { leagueOnExit = true; }); };
+  if (w) w.onclick = () => { w.disabled = true; submit(activity); };
 }
 
 // Users who signed up before the profile questions existed answer them once after login.
@@ -501,23 +514,17 @@ addEventListener('message', (e) => {
     const v = seg.raw ? Number(e.data.score) : Number(e.data.percent);
     submit(seg.activity, Math.round(v || 0));
   }
-  if (e.data?.type === 'game-done') {
-    leagueOnExit = true;
-    segmentDone(seg);
-  }
-});
-
-$('#to-games').addEventListener('click', (e) => {
-  if (!leagueOnExit) return;
-  e.preventDefault();
-  leagueOnExit = false;
-  location.hash = '#/league';
+  if (e.data?.type === 'game-done') segmentDone(seg);
 });
 
 /* ---------- Router ---------- */
 
 function route() {
-  $('#modal').hidden = true;
+  const m = $('#modal');
+  m.hidden = true; m.className = 'modal'; m.onclick = null;
+  const cur = location.hash.replace('#/', '').split('/')[0];
+  const backFromSegment = user && !cur && lastPage && (SEGMENTS[lastPage] || lastPage === 'apps');
+  lastPage = cur;
   if (!user) { $('#topbar').hidden = true; $('#to-games').hidden = true; return renderLogin(); }
   $('#topbar').hidden = false;
   updateHeader(location.hash.replace('#/', ''));
@@ -531,7 +538,10 @@ function route() {
   else if (h === 'league') renderLeague();
   else if (h.startsWith('admin')) renderAdmin(h.split('/')[1] || 'users');
   else if (h.startsWith('apps/')) renderTour(Number(h.split('/')[1]));
-  else renderLanding();
+  else if (backFromSegment) {
+    renderLanding(true);
+    renderLeague(true, () => { if (needsSurvey()) showSurvey(); });
+  } else renderLanding();
 }
 
 addEventListener('hashchange', route);
@@ -561,7 +571,7 @@ sb.auth.onAuthStateChange((event, session) => {
   ready = true;
   // Entering the app always starts on the landing; a fresh login shows the poster again.
   if (user && !was) {
-    if (event === 'SIGNED_IN') try { sessionStorage.removeItem('poster-seen'); } catch {}
+    if (event === 'SIGNED_IN') posterShown = false;
     history.replaceState(null, '', location.pathname + location.search);
   }
   route();
