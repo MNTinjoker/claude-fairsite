@@ -553,7 +553,7 @@ function renderApps() {
       </div>
       <p class="note">دیدن هر تور ۱۰ امتیاز.</p>
     </section>`;
-  toast('هر ویدیو را تا آخر ببینی ۱۰ امتیاز می‌گیری (فقط بار اول).');
+  showInfo('هر ویدیو را تا آخر ببینی <b>۱۰ امتیاز</b> می‌گیری (فقط بار اول).');
 }
 
 function renderTour(id) {
@@ -596,6 +596,16 @@ function showProfile() {
     user = data.user;
     route();
   };
+}
+
+// Centered neon card with one line of info; closes on the button or a tap outside.
+function showInfo(html) {
+  const m = $('#modal');
+  m.innerHTML = `<div class="panel info-pop"><div class="ip-ico">★</div><p>${html}</p><button class="btn block" id="ip-ok">فهمیدم</button></div>`;
+  m.className = 'modal info-modal';
+  m.hidden = false;
+  const close = () => { m.hidden = true; m.className = 'modal'; m.onclick = null; m.innerHTML = ''; };
+  m.onclick = (e) => { if (e.target === m || e.target.id === 'ip-ok') close(); };
 }
 
 function showSurvey() {

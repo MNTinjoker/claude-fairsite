@@ -431,3 +431,13 @@ html, body { overflow-x: hidden; }
 .otp-row .btn { white-space: nowrap; }
 .btn.ghost { background: rgba(255, 255, 255, .06); color: var(--text); border: 1px solid var(--line); box-shadow: none; padding-inline: 14px; }
 .btn.ghost:disabled { opacity: .55; cursor: default; }
+
+/* One-line info popup (e.g. tour scoring) */
+.info-pop { max-width: 420px; width: 100%; text-align: center; padding: 30px 26px 24px; border: 1px solid rgba(57, 255, 106, .45);
+  box-shadow: 0 0 0 1px rgba(57, 255, 106, .15) inset, 0 0 40px rgba(57, 255, 106, .25), 0 30px 80px rgba(0, 0, 0, .6);
+  animation: popin .45s cubic-bezier(.2, 1.4, .4, 1) both; }
+.info-pop .ip-ico { width: 64px; height: 64px; margin: 0 auto 14px; display: grid; place-items: center; border-radius: 50%;
+  font-size: 30px; color: #04140a; background: radial-gradient(circle at 35% 30%, #b8ffcb, #39ff6a 55%, #12c050);
+  box-shadow: 0 0 24px rgba(57, 255, 106, .7); }
+.info-pop p { margin: 0 0 20px; font-size: 19px; font-weight: 700; line-height: 1.8; color: #e6ffee; }
+.info-pop p b { color: #5cff8a; text-shadow: 0 0 10px rgba(57, 255, 106, .6); }
