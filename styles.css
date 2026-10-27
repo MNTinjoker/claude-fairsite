@@ -71,7 +71,7 @@ button { font: inherit; cursor: pointer; }
 /* Fixed layer so the image always covers the screen, even when the sign-up form scrolls. */
 .login::before {
   content: ''; position: fixed; inset: 0; z-index: -1;
-  background: url(assets/landing-bg.webp) center / cover no-repeat;
+  background: url(assets/landing-bg.webp?v=2) center / cover no-repeat;
 }
 .panel {
   width: 100%; max-width: 420px; padding: 24px; border-radius: var(--radius);
@@ -130,10 +130,17 @@ button { font: inherit; cursor: pointer; }
 /* Wide screens: start the scene below the header so nothing sits under it */
 .landing .wide { position: absolute; top: 80px; height: calc(100% - 80px); }
 .landing .tall { display: none; }
+/* Above the tall image on very narrow phones: the spotlight from the image's top edge, fading up to black */
+.landing .tall {
+  background:
+    linear-gradient(to bottom, #000, transparent) top / 100% var(--gap, 0) no-repeat,
+    linear-gradient(to right, #000 0%, rgb(0 12 3) 11%, rgb(0 35 16) 21%, rgb(0 80 46) 32%, rgb(2 161 105) 43%, rgb(4 201 148) 53%,
+      rgb(5 140 92) 64%, rgb(2 61 39) 74%, rgb(1 30 18) 85%, rgb(1 4 0) 96%) top / 100% var(--gap, 0) no-repeat, #000;
+}
 @media (max-aspect-ratio: 4/5) {
   .landing .wide { display: none; }
   .landing .tall { display: block; }
-  .login::before { background-image: url(assets/landing-bg-mobile.webp); }
+  .login::before { background-image: url(assets/landing-bg-mobile.webp?v=2); }
 }
 .hot {
   fill: transparent; stroke: transparent; stroke-width: 6; cursor: pointer;
@@ -374,6 +381,8 @@ html, body { overflow-x: hidden; }
     animation: slogan-in 1s ease-out .2s both, slogan-glow 3s ease-in-out 1.2s infinite;
   }
 }
+/* Short phones (iPhone SE): the icons sit higher, so a smaller slogan keeps clear of them */
+@media (max-aspect-ratio: 4/5) and (max-height: 700px) { .landing .slogan { height: 36svh; padding-top: 70px; font-size: clamp(32px, 10vw, 48px); } }
 @keyframes slogan-in { from { opacity: 0; transform: translateY(-14px) scale(.96); } }
 @keyframes slogan-glow { 50% { text-shadow: 0 0 4px #d9ffe4, 0 0 14px rgba(57, 255, 106, .9), 0 0 32px rgba(57, 255, 106, .55); } }
 /* Same slogan in the header, laptop only */

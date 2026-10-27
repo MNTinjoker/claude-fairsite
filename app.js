@@ -28,12 +28,25 @@ const labelBlur = (id, sd, k) => `<defs>
   </filter></defs>`;
 
 // Hotspots traced over the 1916x821 background image.
+// Clickable shapes over the landing icons, in each image's own pixels:
+// w = wide image (1916x821), t = tall phone image (941x1672). lx/ly place the label.
+const ell = (cx, cy, rx, ry) => `<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}"/>`;
 const HOTSPOTS = [
-  { route: 'apps',   label: 'اپ‌های ما',  lx: 955,  ly: 110, shape: '<path d="M822 168 L905 132 L995 185 L1082 140 L1086 310 L995 356 L905 302 L824 350 Z"/>' },
-  { route: 'wheel',  label: 'دایره وایز', lx: 705, ly: 680, shape: '<path d="M600 428 L812 428 Q852 438 862 520 L872 592 Q872 640 828 632 L758 576 L652 576 L582 632 Q538 640 542 592 L552 520 Q562 438 600 428 Z"/>' },
-  { route: 'quiz',   label: 'تست دانش',   lx: 1220, ly: 680, shape: '<ellipse cx="1220" cy="526" rx="138" ry="116"/>' },
-  { route: 'arkanoid', label: 'پارانویید', lx: 490,  ly: 220, shape: '<path d="M490 242 Q512 334 607 355 Q512 376 490 472 Q468 376 373 355 Q468 334 490 242 Z"/>' },
-  { route: 'candy', label: 'پارس کندی', lx: 1428, ly: 220, shape: '<path d="M1428 242 Q1450 334 1545 355 Q1450 376 1428 472 Q1406 376 1310 355 Q1406 334 1428 242 Z"/>' },
+  { route: 'apps', label: 'اپ‌های ما',
+    w: { lx: 937, ly: 98, shape: '<path d="M797 165 L890 122 L980 175 L1075 130 L1075 315 L980 352 L890 305 L800 342 Z"/>' },
+    t: { lx: 470, ly: 598, shape: '<path d="M362 655 L430 622 L505 660 L575 628 L578 775 L505 808 L430 772 L365 798 Z"/>' } },
+  { route: 'arkanoid', label: 'پارانویید',
+    w: { lx: 482, ly: 196, shape: ell(486, 312, 131, 105) },
+    t: { lx: 185, ly: 668, shape: ell(185, 772, 110, 88) } },
+  { route: 'candy', label: 'پارس کندی',
+    w: { lx: 1435, ly: 182, shape: ell(1435, 315, 128, 122) },
+    t: { lx: 762, ly: 668, shape: ell(762, 777, 102, 97) } },
+  { route: 'wheel', label: 'دایره وایز',
+    w: { lx: 678, ly: 690, shape: ell(678, 509, 125, 138) },
+    t: { lx: 302, ly: 1125, shape: ell(302, 967, 102, 115) } },
+  { route: 'quiz', label: 'تست دانش',
+    w: { lx: 1197, ly: 690, shape: ell(1197, 510, 130, 135) },
+    t: { lx: 640, ly: 1125, shape: ell(640, 963, 108, 110) } },
 ];
 
 // Profile questions asked at sign-up. Stored in auth user_metadata; a trigger copies them to public.profiles.
@@ -159,40 +172,51 @@ function renderLogin(mode = 'up') {
   };
 }
 
-// Label as a glass pill. fs = font size in the svg's own units; tall=true nudges labels further off the shapes.
+// Label as a glass pill. fs = font size in the svg's own units.
 const hotLabel = (h, fs, tall) => {
   const w = h.label.length * fs * 0.55 + fs * 1.6, ht = fs * 1.7;
-  const y = h.ly + (tall ? (h.ly < 400 ? -24 : 18) : 0);
-  // Narrow phones crop the sides of the tall image (visible ≈ 420..1500 here), so pull edge labels inward.
-  const x = tall ? Math.min(Math.max(h.lx, 420 + w / 2), 1500 - w / 2) : h.lx;
-  return `<g class="hot-label" transform="translate(${x} ${y})">
-    <ellipse cx="0" cy="${-fs * 0.32}" rx="${w * (tall ? 0.6 : 0.7)}" ry="${ht * (tall ? 0.7 : 0.95)}" class="shade" filter="url(#${tall ? 'lb-t' : 'lb-w'})"/>
+  const p = tall ? h.t : h.w;
+  const x = tall ? Math.min(Math.max(p.lx, 20 + w / 2), 921 - w / 2) : p.lx;
+  return `<g class="hot-label" transform="translate(${x} ${p.ly})">
+    <ellipse cx="0" cy="${-fs * 0.32}" rx="${w * 0.65}" ry="${ht * 0.85}" class="shade" filter="url(#${tall ? 'lb-t' : 'lb-w'})"/>
     <text font-size="${fs}" filter="url(#${tall ? 'lb-t' : 'lb-w'}-glow)">${h.label}</text></g>`;
 };
 const hotspots = (fs, tall) => HOTSPOTS.map((h) => `
   <a href="#/${h.route}" class="hotgroup" data-route="${h.route}" aria-label="${h.label}">
-    <g class="hot" tabindex="-1">${h.shape}</g>${hotLabel(h, fs, tall)}
+    <g class="hot" tabindex="-1">${(tall ? h.t : h.w).shape}</g>${hotLabel(h, fs, tall)}
   </a>`).join('');
+
+// Phones narrower than the tall image show all of it (no icons cut at the sides), pinned to the bottom;
+// wider portrait screens (tablets) crop its bottom instead, so the icons stay clear of the slogan;
+// the space above gets the image's top light continued upward (--gap = its height).
+function fitTall() {
+  const svg = view.querySelector('.land.tall');
+  if (!svg) return;
+  const gap = innerHeight - innerWidth * 1672 / 941;
+  svg.setAttribute('preserveAspectRatio', gap > 0 ? 'xMidYMax meet' : 'xMidYMin slice');
+  svg.style.setProperty('--gap', Math.max(0, gap) + 'px');
+}
+addEventListener('resize', fitTall);
 
 // Poster once per page load (iOS Safari keeps sessionStorage across reopened tabs, so it would never show again).
 let posterShown = false;
 function renderLanding(quiet = false) {
-  // Wide screens use the 1916x821 image; portrait phones use the 941x1672 one. The mobile image has the
-  // same shapes, smaller and lower, so the same hotspots are reused through one transform.
+  // Wide screens use the 1916x821 image; portrait phones use the 941x1672 one, each with its own hotspots.
   view.innerHTML = `
     <section class="landing">
       <svg viewBox="0 0 1916 821" preserveAspectRatio="xMidYMid slice" class="land wide">
         ${labelBlur('lb-w', 10, 1.4)}
-        <image href="assets/landing-bg.webp" width="1916" height="821"/>
+        <image href="assets/landing-bg.webp?v=2" width="1916" height="821"/>
         ${hotspots(28, false)}
       </svg>
       <svg viewBox="0 0 941 1672" preserveAspectRatio="xMidYMid slice" class="land tall">
         ${labelBlur('lb-t', 22, 2.8)}
-        <image href="assets/landing-bg-mobile.webp" width="941" height="1672"/>
-        <g transform="translate(-193 659) scale(0.69)">${hotspots(50, true)}</g>
+        <image href="assets/landing-bg-mobile.webp?v=2" width="941" height="1672"/>
+        ${hotspots(34, true)}
       </svg>
       <h2 class="slogan">سبز فکر کن،<br>سبز بازی کن!</h2>
     </section>`;
+  fitTall();
   if (quiet) return;
   if (posterShown) { if (needsSurvey()) showSurvey(); return; }
   showPoster();
