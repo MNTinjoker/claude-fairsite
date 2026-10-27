@@ -282,7 +282,7 @@ function segmentDone(seg) {
         <img src="assets/logo.png" alt="" class="done-logo">
         <h1>${seg.title}</h1>
         <p>${pts != null ? `این بازی را انجام دادی و <b>${fa(pts)}</b> امتیاز گرفتی.` : 'این بازی تمام شد.'}</p>
-        <p class="hint">هر بازی فقط یک بار انجام می‌شود.</p>
+        <p class="hint">هر بازی فقط یک بار انجام می‌شود.${seg.review ? '<br>مرور پاسخ‌ها فقط برای بازی‌هایی است که بعد از به‌روزرسانی امروز انجام شده‌اند.' : ''}</p>
       </div>
     </section>`;
 }
@@ -543,7 +543,8 @@ addEventListener('message', (e) => {
     if (seg.review && e.data.review) saveReview(seg.activity, e.data.review);
   }
   if (e.data?.type === 'review-ready' && pendingReview) e.source.postMessage({ type: 'review-data', data: pendingReview }, location.origin);
-  if (e.data?.type === 'game-done') segmentDone(seg);
+  // Quiz and wheel go straight to the review of this play; other games show the done card.
+  if (e.data?.type === 'game-done') seg.review ? openReview(seg) : segmentDone(seg);
 });
 
 /* ---------- Router ---------- */
