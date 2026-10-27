@@ -3,17 +3,14 @@ window.APP_CONFIG = {
   SUPABASE_URL: 'https://gyturwiuuncwgygquvim.supabase.co',
   SUPABASE_ANON_KEY: 'sb_publishable_R4PqdgAWBR2OE6-OQewyuQ_s6q0CPQ6',
 
-  // 9 apps. Put each tour video in /tours and set `tour` (e.g. 'tours/app1.mp4'), or a YouTube/Aparat embed URL.
+  // App tours: each video lives in /tours.
   APPS: [
-    { id: 1, name: 'اپ ۱', tour: null },
-    { id: 2, name: 'اپ ۲', tour: null },
-    { id: 3, name: 'اپ ۳', tour: null },
-    { id: 4, name: 'اپ ۴', tour: null },
-    { id: 5, name: 'اپ ۵', tour: null },
-    { id: 6, name: 'اپ ۶', tour: null },
-    { id: 7, name: 'اپ ۷', tour: null },
-    { id: 8, name: 'اپ ۸', tour: null },
-    { id: 9, name: 'اپ ۹', tour: null },
+    { id: 1, name: 'دستیار هوشمند پروژه', tour: 'tours/pm.mp4' },
+    { id: 2, name: 'آموزش PMBOK 8', tour: 'tours/pmbok.mp4' },
+    { id: 3, name: 'امکان‌سنجی پروژه‌ها', tour: 'tours/fs.mp4' },
+    { id: 4, name: 'ارزیابی عملکرد سازمانی', tour: 'tours/okr.mp4' },
+    { id: 5, name: 'کارت امتیازی متوازن', tour: 'tours/bsc.mp4' },
+    { id: 6, name: 'مدیریت وظایف', tour: 'tours/tm.mp4' },
   ],
 
   // Survey shown after the user's first finished segment.
