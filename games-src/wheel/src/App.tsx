@@ -38,9 +38,19 @@ interface DragSession {
   isOverWheel: boolean;
 }
 
+const CATS = ['economic', 'environmental', 'social', 'governance'] as CategoryId[];
+const isReview = new URLSearchParams(location.search).get('review') === '1';
+type Board = Record<CategoryId, (WordItem | null)[]>;
+const boardFromIds = (ids: Record<string, (string | null)[]>): Board =>
+  Object.fromEntries(CATS.map((c) => [c, (ids?.[c] || [null, null, null, null, null]).map((id) => WORD_ITEMS.find((w) => w.id === id) || null)])) as Board;
+const correctBoard = (): Board => Object.fromEntries(CATS.map((c) => [c, WORD_ITEMS.filter((w) => w.categoryId === c)])) as Board;
+
 export default function App() {
   // App begins on the Intro / Explanation Home Screen
-  const [appState, setAppState] = useState<AppState>('TITLE');
+  const [appState, setAppState] = useState<AppState>(isReview ? 'PLAYING' : 'TITLE');
+  // Review mode: the saved play from the host, and whether the correct answers are shown instead.
+  const [review, setReview] = useState<{ mine: Board; correct: number } | null>(null);
+  const [showCorrect, setShowCorrect] = useState(false);
   const [language, setLanguage] = useState<LanguageMode>('fa');
   const [gameMode] = useState<GameMode>('zen');
 
@@ -170,6 +180,28 @@ export default function App() {
     const muted = sound.toggleMute();
     setIsMuted(muted);
   }, []);
+
+  useEffect(() => {
+    if (!isReview) return;
+    const onMsg = (e: MessageEvent) => {
+      if (e.data?.type !== 'review-data' || !e.data.data?.placed) return;
+      const mine = boardFromIds(e.data.data.placed);
+      const correct = CATS.reduce((n, c) => n + mine[c].filter((w) => w?.categoryId === c).length, 0);
+      setReview({ mine, correct });
+      setPlacedWords(mine);
+      setIsEvaluated(true);
+    };
+    window.addEventListener('message', onMsg);
+    window.parent?.postMessage({ type: 'review-ready' }, '*');
+    return () => window.removeEventListener('message', onMsg);
+  }, []);
+
+  const toggleCorrect = () => {
+    if (!review) return;
+    const next = !showCorrect;
+    setShowCorrect(next);
+    setPlacedWords(next ? correctBoard() : review.mine);
+  };
 
   // Game timer loop
   useEffect(() => {
@@ -408,7 +440,8 @@ export default function App() {
     setFinalCorrectCount(correct);
     setIsEvaluated(true);
     // Report result to the host site (scored once, server-side)
-    window.parent?.postMessage({ type: 'game-result', percent: Math.round((correct / 20) * 100) }, '*');
+    const placedIds = Object.fromEntries(CATS.map((c) => [c, placedWords[c].map((w) => w?.id ?? null)]));
+    window.parent?.postMessage({ type: 'game-result', percent: Math.round((correct / 20) * 100), review: { placed: placedIds } }, '*');
     // Non-intrusive celebration on the wheel: no popup modal
     setShowResultsModal(false);
 
@@ -781,6 +814,22 @@ export default function App() {
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] rounded-full bg-emerald-500/4 blur-[120px]" />
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[480px] h-[480px] rounded-full bg-cyan-500/3 blur-[90px]" />
       </div>
+
+      {/* Review mode: read-only board with a banner to switch between my answers and the correct ones */}
+      {isReview && (
+        <div className="fixed inset-0 z-[60]" style={{ background: review ? 'transparent' : '#070e11' }}>
+          {review && (
+            <div className="absolute bottom-20 sm:bottom-4 left-1/2 -translate-x-1/2 flex flex-wrap items-center justify-center gap-2 bg-[#0b1a14]/95 border border-emerald-500/50 rounded-2xl px-4 py-2 shadow-[0_0_20px_rgba(74,222,128,.25)] font-bold text-sm w-max max-w-[94vw]">
+              <span className="text-emerald-300">
+                {showCorrect ? 'پاسخ‌های درست' : `مرور بازی تو: ${String(review.correct).replace(/\d/g, (d) => '۰۱۲۳۴۵۶۷۸۹'[+d])} از ۲۰ درست`}
+              </span>
+              <button onClick={toggleCorrect} className="px-3 py-1 rounded-xl bg-emerald-500 text-black text-xs cursor-pointer">
+                {showCorrect ? 'پاسخ‌های من' : 'نمایش پاسخ درست'}
+              </button>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Screen 1: Intro / Explanation Screen */}
       {appState === 'TITLE' && (

@@ -7,9 +7,9 @@ let user = null;
 let scores = {}; // activity_id -> points
 
 const SEGMENTS = {
-  wheel:  { title: 'دایره وایز', activity: 'game:wheel',     src: 'games/wheel/index.html' },
+  wheel:  { title: 'دایره وایز', activity: 'game:wheel',     src: 'games/wheel/index.html', review: true },
   arkanoid: { title: 'پارانویید', activity: 'game:match3', src: 'games/arkanoid/index.html' }, // activity id kept: allowed by submit_score
-  quiz:   { title: 'تست دانش',    activity: 'test:knowledge', src: 'games/quiz/index.html' },
+  quiz:   { title: 'تست دانش',    activity: 'test:knowledge', src: 'games/quiz/index.html', review: true },
   // Reports a raw score (not a percent); the server adds score / 1000 points.
   candy:  { title: 'پارس کندی',  activity: 'game:candy',     src: 'games/candy/index.html', raw: true },
 };
@@ -236,13 +236,40 @@ function renderSegment(key) {
   const seg = SEGMENTS[key];
   // Full screen: the game owns the whole viewport; only the back-to-games button floats on top.
   // Each game can be played once: a finished game shows its result instead.
-  if (seg.activity in scores) return segmentDone(seg);
+  // Quiz and wheel open a read-only review of that play instead.
+  if (seg.activity in scores) return seg.review ? openReview(seg) : segmentDone(seg);
   $('#topbar').hidden = true;
   view.innerHTML = `
     <section class="fullscreen">
       <iframe src="${seg.src}" title="${seg.title}" allow="autoplay; fullscreen"></iframe>
     </section>`;
   toast(seg.raw ? 'هر ۱۰۰۰ امتیاز بازی = ۱ امتیاز. فقط یک بار می‌توانی بازی کنی.' : 'امتیاز: ۱۰ تا ۲۰ بر اساس درصد. فقط یک بار می‌توانی بازی کنی.');
+}
+
+// Saved answers of a finished play: on the server, with a local copy as fallback.
+const reviewKey = (activity) => `review:${user.id}:${activity}`;
+function saveReview(activity, data) {
+  try { localStorage.setItem(reviewKey(activity), JSON.stringify(data)); } catch {}
+  sb.from('game_reviews').insert({ activity_id: activity, data }).then(() => {});
+}
+async function loadReview(activity) {
+  const { data } = await sb.from('game_reviews').select('data').eq('activity_id', activity).maybeSingle();
+  if (data?.data) return data.data;
+  try { return JSON.parse(localStorage.getItem(reviewKey(activity))); } catch { return null; }
+}
+
+// The game opens with ?review=1, says review-ready, and gets the saved play to show.
+let pendingReview = null;
+async function openReview(seg) {
+  const data = await loadReview(seg.activity);
+  if (!data) return segmentDone(seg);
+  pendingReview = data;
+  $('#topbar').hidden = true;
+  view.innerHTML = `
+    <section class="fullscreen">
+      <iframe src="${seg.src}?review=1" title="${seg.title}" allow="autoplay; fullscreen"></iframe>
+    </section>`;
+  toast('مرور بازی تو. هر بازی فقط یک بار انجام می‌شود.');
 }
 
 function segmentDone(seg) {
@@ -513,7 +540,9 @@ addEventListener('message', (e) => {
   if (e.data?.type === 'game-result') {
     const v = seg.raw ? Number(e.data.score) : Number(e.data.percent);
     submit(seg.activity, Math.round(v || 0));
+    if (seg.review && e.data.review) saveReview(seg.activity, e.data.review);
   }
+  if (e.data?.type === 'review-ready' && pendingReview) e.source.postMessage({ type: 'review-data', data: pendingReview }, location.origin);
   if (e.data?.type === 'game-done') segmentDone(seg);
 });
 

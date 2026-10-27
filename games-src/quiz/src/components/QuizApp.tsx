@@ -104,6 +104,8 @@ type QuizState = 'start' | 'playing' | 'result';
 
 const lettersFa = ['الف', 'ب', 'ج', 'د'];
 const lettersEn = ['A', 'B', 'C', 'D'];
+const isReview = new URLSearchParams(location.search).get('review') === '1';
+
 const getLetter = (index: number, lang: 'fa' | 'en' = 'fa') => {
   return lang === 'en' ? (lettersEn[index] || '-') : (lettersFa[index] || '-');
 };
@@ -492,10 +494,25 @@ export default function QuizApp() {
     if (quizState !== 'playing') return;
     setShowAnswerSheet(false);
     setQuizState('result');
-    window.parent?.postMessage({ type: 'game-result', percent: calculateScore().percentage }, '*');
+    // The answers go along so the player can review this play later.
+    window.parent?.postMessage({ type: 'game-result', percent: calculateScore().percentage, review: { questions, answers: selectedAnswers } }, '*');
     // Leave the result screen up for a moment before the host opens the league.
     setTimeout(() => window.parent?.postMessage({ type: 'game-done' }, '*'), 6000);
   };
+
+  // Review mode (?review=1): the host sends the saved play and we show its scorecard.
+  useEffect(() => {
+    if (!isReview) return;
+    const onMsg = (e: MessageEvent) => {
+      if (e.data?.type !== 'review-data' || !e.data.data?.questions) return;
+      setQuestions(e.data.data.questions);
+      setSelectedAnswers(e.data.data.answers || {});
+      setQuizState('result');
+    };
+    window.addEventListener('message', onMsg);
+    window.parent?.postMessage({ type: 'review-ready' }, '*');
+    return () => window.removeEventListener('message', onMsg);
+  }, []);
 
   useEffect(() => {
     if (quizState !== 'playing') return;
@@ -572,6 +589,8 @@ export default function QuizApp() {
     );
   }
 
+  if (isReview && quizState !== 'result') return <div className="min-h-screen bg-slate-950" />;
+
   if (quizState === 'result') {
     const score = calculateScore();
     return (
@@ -579,6 +598,7 @@ export default function QuizApp() {
         {header}
         <main className="flex-1 max-w-3xl w-full mx-auto p-4 sm:p-6 flex flex-col gap-4">
           <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl p-6 text-center border border-slate-100 dark:border-slate-800/50">
+            {isReview && <p className="text-xs font-bold text-blue-600 mb-2">{t('مرور آزمونی که انجام دادی', 'Review of your test')}</p>}
             <h1 className="text-xl sm:text-2xl font-black mb-4 text-slate-900 dark:text-white">{t('کارنامه آزمون', 'Exam Scorecard')}</h1>
             <div className="text-5xl font-black text-blue-600 mb-4">{formatNumber(score.percentage, lang)}٪</div>
             <div className="flex justify-center gap-3 text-xs sm:text-sm font-bold">
