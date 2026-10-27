@@ -8,7 +8,7 @@ window.APP_CONFIG = {
     { id: 1, name: 'مدیریت پروژه', en: 'PM', img: 'assets/tours/pm.webp', tour: 'tours/pm.mp4' },
     { id: 2, name: 'آموزش', en: 'PMBOK 8', img: 'assets/tours/pmbok.webp', tour: 'tours/pmbok.mp4' },
     { id: 3, name: 'امکان‌سنجی پروژه‌ها', en: 'FS', img: 'assets/tours/fs.webp', tour: 'tours/fs.mp4' },
-    { id: 4, name: 'اهداف و نتایج کلیدی', en: 'OKR', img: 'assets/tours/okr.webp', tour: 'tours/okr.mp4' },
+    { id: 4, name: 'اهداف و نتایج کلیدی', en: 'OKR', img: 'assets/tours/okr.webp', tour: 'tours/okr-v2.mp4' },
     { id: 5, name: 'کارت امتیازی متوازن', en: 'BSC', img: 'assets/tours/bsc.webp', tour: 'tours/bsc.mp4' },
     { id: 6, name: 'مدیریت وظایف', en: 'TM', img: 'assets/tours/tm.webp', tour: 'tours/tm.mp4' },
   ],
