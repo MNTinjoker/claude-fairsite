@@ -144,9 +144,10 @@ button { font: inherit; cursor: pointer; }
 }
 .hot {
   fill: transparent; stroke: transparent; stroke-width: 6; cursor: pointer;
-  pointer-events: all; transition: stroke .2s, filter .2s;
+  pointer-events: all;
 }
-.hot:hover, .hot:focus { stroke: rgba(255, 255, 255, .9); filter: drop-shadow(0 0 14px rgba(255, 255, 255, .6)); outline: none; }
+/* The click areas stay invisible; only the label shows on hover */
+.hot:hover, .hot:focus { outline: none; }
 /* Segment names: dark glass pills like the rest of the UI */
 .hot-label { pointer-events: none; opacity: 0; transition: opacity .35s; }
 .hot-label .shade { fill: #000; opacity: .85; }
@@ -158,7 +159,6 @@ button { font: inherit; cursor: pointer; }
 /* Intro tour: dim everything, light one segment at a time */
 .touring .hotgroup .hot-label { opacity: 0; }
 .touring .hotgroup.lit .hot-label { opacity: 1; }
-.hotgroup.lit .hot { stroke: rgba(255, 255, 255, .95); filter: drop-shadow(0 0 18px rgba(255, 255, 255, .75)); }
 
 /* Inner pages */
 .page { min-height: 100%; padding: 80px 16px 32px; max-width: 1000px; margin: 0 auto; }
