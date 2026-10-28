@@ -454,9 +454,21 @@ async function renderLeague(popup = false, onClose) {
     view.innerHTML = `<section class="page league">${card}</section>`;
   }
   const body = root.querySelector('.lg-body');
-  const { data, error } = await sb.rpc('get_leaderboard');
-  if (!body.isConnected) return;
-  if (error) return (body.innerHTML = '<div class="lg-loading">خطا در بارگذاری لیگ</div>');
+  // Last good list shows at once; a hung or failed request is retried instead of spinning forever.
+  const cacheKey = 'lb-cache:' + user.id;
+  let data = null;
+  try { data = JSON.parse(localStorage.getItem(cacheKey)); } catch {}
+  const fetchLeague = async (tries = 3) => {
+    for (let i = 0; i < tries; i++) {
+      const res = await Promise.race([
+        sb.rpc('get_leaderboard'),
+        new Promise((r) => setTimeout(() => r({ error: 'timeout' }), 8000)),
+      ]).catch((error) => ({ error }));
+      if (!res.error && Array.isArray(res.data)) return res.data;
+      await new Promise((r) => setTimeout(r, 1000 * (i + 1)));
+    }
+    return null;
+  };
   // first=false (tab switch): no entrance animations or confetti, so the list swaps instantly.
   const draw = (first = true) => {
     body.classList.toggle('quick', !first);
@@ -490,8 +502,22 @@ async function renderLeague(popup = false, onClose) {
       confetti(fx, !popup);
     }
   };
-  root.querySelectorAll('.lg-tabs button').forEach((b) => (b.onclick = () => { if (leagueTab === b.dataset.t) return; leagueTab = b.dataset.t; draw(false); }));
-  draw();
+  root.querySelectorAll('.lg-tabs button').forEach((b) => (b.onclick = () => { if (leagueTab === b.dataset.t || !data) return; leagueTab = b.dataset.t; draw(false); }));
+  const cached = !!data;
+  if (cached) draw();
+  const load = async () => {
+    const fresh = await fetchLeague();
+    if (!body.isConnected) return;
+    if (fresh) {
+      try { localStorage.setItem(cacheKey, JSON.stringify(fresh)); } catch {}
+      data = fresh;
+      return draw(!cached);
+    }
+    if (cached) return;
+    body.innerHTML = '<div class="lg-loading">خطا در بارگذاری لیگ<br><button class="btn ghost" id="lg-retry">دوباره تلاش کن</button></div>';
+    body.querySelector('#lg-retry').onclick = () => { body.innerHTML = '<div class="lg-loading">در حال بارگذاری...</div>'; load(); };
+  };
+  load();
 }
 
 // Admin: users (scores, reset, delete) and survey answers.
@@ -539,26 +565,29 @@ async function renderAdmin(tab) {
   view.querySelectorAll('[data-del]').forEach((b) => { b.onclick = () => act('admin_delete_user', b.dataset.del, 'حساب این کاربر برای همیشه حذف شود؟'); });
 }
 
-function renderApps() {
+// pub: the open #/tours page, same cards and videos without sign-in or scoring.
+function renderApps(pub = false) {
+  const base = pub ? 'tours' : 'apps';
   view.innerHTML = `
     <section class="page">
       <h1>اپ‌های ما</h1>
       <div class="apps">
         ${cfg.APPS.map((a) => `
-          <a class="app-btn" href="#/apps/${a.id}">
+          <a class="app-btn" href="#/${base}/${a.id}">
             <img src="${a.img}" alt="">
             <span class="app-name">${a.name} <b dir="ltr">${a.en}</b></span>
-            ${'tour:' + a.id in scores ? '<span class="done">✓ دیده شد</span>' : ''}
+            ${!pub && 'tour:' + a.id in scores ? '<span class="done">✓ دیده شد</span>' : ''}
           </a>`).join('')}
       </div>
-      <p class="note">دیدن هر تور ۱۰ امتیاز.</p>
+      ${pub ? '' : '<p class="note">دیدن هر تور ۱۰ امتیاز.</p>'}
     </section>`;
-  showInfo('هر ویدیو را تا آخر ببینی <b>۱۰ امتیاز</b> می‌گیری (فقط بار اول).');
+  if (!pub) showInfo('هر ویدیو را تا آخر ببینی <b>۱۰ امتیاز</b> می‌گیری (فقط بار اول).');
 }
 
-function renderTour(id) {
+function renderTour(id, pub = false) {
+  const base = pub ? 'tours' : 'apps';
   const app = cfg.APPS.find((a) => a.id === id);
-  if (!app) return (location.hash = '#/apps');
+  if (!app) return (location.hash = '#/' + base);
   const activity = 'tour:' + id;
   let body;
   if (!app.tour) body = `<div class="empty">تور این اپ به‌زودی اضافه می‌شود.</div>`;
@@ -569,8 +598,9 @@ function renderTour(id) {
     <section class="page">
       <h1>${app.name} <span dir="ltr">${app.en}</span></h1>
       ${body}
-      <p class="note"><a href="#/apps">← بازگشت به اپ‌ها</a></p>
+      <p class="note"><a href="#/${base}">← بازگشت به اپ‌ها</a></p>
     </section>`;
+  if (pub) return;
   const vid = $('#vid');
   if (vid) vid.onended = () => submit(activity);
   const w = $('#watched');
@@ -685,6 +715,11 @@ function route() {
   const cur = location.hash.replace('#/', '').split('/')[0];
   const backFromSegment = user && !cur && lastPage && (SEGMENTS[lastPage] || lastPage === 'apps');
   lastPage = cur;
+  if (cur === 'tours') {
+    $('#topbar').hidden = true; $('#to-games').hidden = true;
+    const id = Number(location.hash.split('/')[2]);
+    return id ? renderTour(id, true) : renderApps(true);
+  }
   if (!user) { $('#topbar').hidden = true; $('#to-games').hidden = true; return renderLogin(); }
   $('#topbar').hidden = false;
   updateHeader(location.hash.replace('#/', ''));
@@ -730,7 +765,7 @@ sb.auth.onAuthStateChange((event, session) => {
   if (ready && user?.id === was) return;
   ready = true;
   // Entering the app always starts on the landing; a fresh login shows the poster again.
-  if (user && !was) {
+  if (user && !was && !location.hash.startsWith('#/tours')) {
     if (event === 'SIGNED_IN') posterShown = false;
     history.replaceState(null, '', location.pathname + location.search);
   }

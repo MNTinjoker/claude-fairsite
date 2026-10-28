@@ -149,13 +149,12 @@ button { font: inherit; cursor: pointer; }
 /* The click areas stay invisible; only the label shows on hover */
 .hot:hover, .hot:focus { outline: none; }
 /* Segment names: dark glass pills like the rest of the UI */
-.hot-label { pointer-events: none; opacity: 0; transition: opacity .35s; }
+.hot-label { pointer-events: none; opacity: .95; transition: opacity .35s; }
 .hot-label .shade { fill: #000; opacity: .85; }
 .hot-label text {
   fill: #eafff0; font-weight: 700; text-anchor: middle;
 }
 .hotgroup:hover .hot-label, .hotgroup:focus-within .hot-label { opacity: 1; }
-@media (hover: none) { .hot-label { opacity: .95; } }
 /* Intro tour: dim everything, light one segment at a time */
 .touring .hotgroup .hot-label { opacity: 0; }
 .touring .hotgroup.lit .hot-label { opacity: 1; }
@@ -277,6 +276,7 @@ html, body { overflow-x: hidden; }
 .league { padding-top: 76px; }
 .lg-card { position: relative; max-width: 520px; margin: 0 auto; padding: 18px 16px 24px; border-radius: 34px; overflow: hidden; background: radial-gradient(120% 60% at 50% 0%, #2a3352 0%, #161b2e 45%, #0d1120 100%); border: 1px solid rgba(255, 255, 255, .08); box-shadow: 0 30px 80px rgba(0, 0, 0, .6), inset 0 1px 0 rgba(255, 255, 255, .08); font-family: Vazirmatn, Tahoma, sans-serif; }
 .lg-loading { text-align: center; color: #8b93b0; padding: 60px 0; }
+.lg-loading .btn { margin-top: 14px; }
 .lg-tabs { display: flex; gap: 4px; padding: 4px; margin: 0 auto 8px; width: max-content; border-radius: 99px; background: rgba(0, 0, 0, .35); border: 1px solid rgba(255, 255, 255, .06); }
 .lg-tabs button { all: unset; cursor: pointer; padding: 8px 22px; border-radius: 99px; color: #8b93b0; font-weight: 600; font-size: 14px; transition: .25s; }
 .lg-tabs button.on { color: #fff; background: linear-gradient(180deg, #3a4466, #262d47); box-shadow: 0 4px 14px rgba(0, 0, 0, .4), inset 0 1px 0 rgba(255, 255, 255, .15); }
