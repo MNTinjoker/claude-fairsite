@@ -1,0 +1,77 @@
+@import "tailwindcss";
+@import url('https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css');
+
+@layer base {
+  html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background-color: #030712;
+    color: #f8fafc;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: none;
+    font-family: 'Vazirmatn', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Tahoma, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  .font-arcade {
+    font-family: 'Press Start 2P', monospace, sans-serif;
+  }
+
+  .font-vazir {
+    font-family: 'Vazirmatn', -apple-system, BlinkMacSystemFont, 'Segoe UI', Tahoma, Arial, sans-serif !important;
+  }
+}
+
+/* Enforce Vazirmatn font everywhere for Persian / RTL mode (menus, buttons, dialogs, titles, messages) */
+[dir="rtl"],
+[dir="rtl"] * {
+  font-family: 'Vazirmatn', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Tahoma, Arial, sans-serif !important;
+  letter-spacing: normal;
+}
+
+/* Dedicated retro pixel font strictly for numbers and arcade scores */
+.arcade-num,
+[dir="rtl"] .arcade-num,
+.arcade-strict,
+[dir="rtl"] .arcade-strict {
+  font-family: 'Press Start 2P', monospace, sans-serif !important;
+  letter-spacing: 0.05em;
+}
+
+/* CRT Scanline Overlay Effect (toggleable) */
+.scanlines {
+  background: linear-gradient(
+    rgba(18, 16, 16, 0) 50%, 
+    rgba(0, 0, 0, 0.25) 50%
+  ), linear-gradient(
+    90deg,
+    rgba(255, 0, 0, 0.03),
+    rgba(0, 255, 0, 0.01),
+    rgba(0, 0, 255, 0.03)
+  );
+  background-size: 100% 4px, 6px 100%;
+  pointer-events: none;
+}
+
+/* Retro CRT Glow */
+.arcade-glow-cyan {
+  text-shadow: 0 0 10px rgba(6, 182, 212, 0.8), 0 0 20px rgba(6, 182, 212, 0.4);
+}
+.arcade-glow-pink {
+  text-shadow: 0 0 10px rgba(244, 63, 94, 0.8), 0 0 20px rgba(244, 63, 94, 0.4);
+}
+.arcade-glow-gold {
+  text-shadow: 0 0 10px rgba(234, 179, 8, 0.8), 0 0 20px rgba(234, 179, 8, 0.4);
+}
+
+/* Scrollbars in the app palette */
+* { scrollbar-width: thin; scrollbar-color: #39ff6a33 transparent; }
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: linear-gradient(180deg, #5cff8a99, #1fa65a99); border-radius: 99px; border: 2px solid transparent; background-clip: padding-box; }
+::-webkit-scrollbar-thumb:hover { background: linear-gradient(180deg, #5cff8a, #1fa65a); background-clip: padding-box; }

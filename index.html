@@ -3,25 +3,50 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Fair</title>
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <title>Pars Game</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;600;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;600;700;800;900&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+  <link rel="stylesheet" href="styles.css?v=35">
+  <link rel="preload" as="image" href="assets/landing-bg.webp?v=2" media="(min-aspect-ratio: 4/5)">
+  <link rel="preload" as="image" href="assets/landing-bg-mobile.webp?v=2" media="(max-aspect-ratio: 4/5)">
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/icons/favicon-32.png?v=2">
+  <link rel="icon" type="image/png" sizes="192x192" href="assets/icons/icon-192.png?v=2">
+  <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png?v=2">
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="application-name" content="Pars Game">
+  <meta name="apple-mobile-web-app-title" content="Pars Game">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="theme-color" content="#0b0b0c">
 </head>
 <body>
   <header id="topbar" hidden>
-    <a href="#/" class="brand">خانه</a>
-    <div class="score">امتیاز: <b id="total">0</b></div>
-    <button id="logout" class="link">خروج</button>
+    <div class="brand"><img src="assets/logo.png" alt="Pars Project"><span class="brand-txt"><b>مدیریت پروژه پارس</b><small id="crumb">خانه</small></span></div>
+    <nav class="nav">
+      <a href="#/league" data-r="league">لیگ</a>
+      <a href="#/admin" data-r="admin" id="admin-link" hidden>مدیریت</a>
+    </nav>
+    <div class="top-slogan">سبز فکر کن، سبز بازی کن!</div>
+    <div class="me-chip">
+      <img id="me-ava" class="ava" alt="">
+      <span class="me-txt"><b id="hello"></b><small id="rank-txt"></small></span>
+      <span class="pill"><b id="total">0</b> امتیاز</span>
+    </div>
+    <button id="logout" class="link out" title="خروج" aria-label="خروج"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3M10 16l-4-4 4-4M6 12h10"/></svg></button>
   </header>
 
   <main id="view"></main>
+  <a href="#/" id="to-games" class="to-games" hidden><span class="shine"></span><span class="spark s1">✦</span><span class="spark s2">✦</span><span class="spark s3">✦</span><img src="assets/logo.png" alt="" class="tg-logo">رفتن به باقی بازی‌ها</a>
 
   <div id="modal" class="modal" hidden></div>
   <div id="toast" class="toast" hidden></div>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-  <script src="config.js"></script>
-  <script src="app.js"></script>
+  <script src="vendor/supabase.min.js"></script>
+  <script src="config.js?v=6"></script>
+  <script src="app.js?v=38"></script>
 </body>
 </html>

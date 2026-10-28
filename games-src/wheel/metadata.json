@@ -1,0 +1,6 @@
+{
+  "name": "ESG & Economic Sustainability Circle - بازی پازل دوار",
+  "description": "An interactive circular puzzle game connecting corporate sustainability concepts to economic, environmental, social, and governance segments.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,0 +1,55 @@
+@import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+
+  /* App palette (dark glass + neon green). Light-mode scales are inverted so existing classes stay as written. */
+  --color-white: #1c1c1e;
+  --color-slate-50: #0b0b0c; --color-slate-100: #18181a; --color-slate-150: #202022; --color-slate-200: #2a2a2d;
+  --color-slate-205: #2a2a2d; --color-slate-300: #3a3a3e; --color-slate-350: #4a4a4f; --color-slate-400: #6b6b70;
+  --color-slate-450: #7c7c81; --color-slate-500: #8e8e93; --color-slate-600: #b4b4b8; --color-slate-700: #d4d4d8;
+  --color-slate-800: #e8e8ea; --color-slate-900: #f4f4f5; --color-slate-950: #ffffff;
+  --color-blue-50: #0f2416; --color-blue-100: #123a1f; --color-blue-200: #1a5a2e; --color-blue-300: #22803f;
+  --color-blue-400: #2fbf5a; --color-blue-500: #39ff6a; --color-blue-600: #39e563; --color-blue-700: #5cff8a;
+  --color-blue-800: #8dffae; --color-blue-900: #b6ffc8; --color-blue-950: #d9ffe4;
+  --color-indigo-50: #0f2416; --color-indigo-100: #123a1f; --color-indigo-200: #1a5a2e; --color-indigo-300: #22803f;
+  --color-indigo-400: #2fbf5a; --color-indigo-500: #39ff6a; --color-indigo-600: #39e563; --color-indigo-700: #5cff8a;
+  --color-indigo-800: #8dffae; --color-indigo-900: #b6ffc8; --color-indigo-950: #d9ffe4;
+  --color-emerald-50: #0f2416; --color-emerald-100: #123a1f; --color-emerald-150: #174a28; --color-emerald-200: #1a5a2e;
+  --color-emerald-250: #1e6a35; --color-emerald-300: #22803f; --color-emerald-600: #5cff8a; --color-emerald-700: #8dffae;
+  --color-emerald-800: #b6ffc8; --color-emerald-850: #c8ffd6; --color-emerald-900: #d9ffe4;
+  --color-rose-50: #2a1014; --color-rose-100: #3d151b; --color-rose-105: #3d151b; --color-rose-150: #4d1a22; --color-rose-200: #5e1f28;
+  --color-rose-300: #8a2a37; --color-rose-600: #fb7185; --color-rose-700: #fda4af; --color-rose-800: #fecdd3; --color-rose-900: #ffe4e6;
+  --color-red-50: #2a1014; --color-red-200: #5e1f28; --color-red-600: #fb7185; --color-red-650: #fb7185; --color-red-700: #fda4af;
+  --color-indigo-150: #174a28; --color-slate-750: #dedee1;
+  --color-purple-50: #1d1230; --color-purple-200: #3d2763; --color-purple-600: #c4a5ff; --color-purple-800: #e0d0ff;
+  --color-amber-50: #2a1f08; --color-amber-100: #3d2c0b; --color-amber-200: #5e4410; --color-amber-300: #8a6418;
+  --color-amber-600: #fbbf24; --color-amber-700: #fcd34d; --color-amber-800: #fde68a; --color-amber-900: #fef3c7;
+  --font-sans: "Vazirmatn", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Vazirmatn", monospace;
+}
+
+@variant dark (&:where(.dark, .dark *));
+
+@layer base {
+  :root {
+    color-scheme: light;
+  }
+  .dark {
+    color-scheme: dark;
+  }
+  body {
+    @apply bg-slate-50 text-slate-900 transition-colors duration-300;
+    background: #0b0b0c;
+  }
+  .dark body {
+    @apply bg-slate-950 text-white;
+  }
+}
+
+/* Scrollbars in the app palette */
+* { scrollbar-width: thin; scrollbar-color: #39ff6a33 transparent; }
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: linear-gradient(180deg, #5cff8a99, #1fa65a99); border-radius: 99px; border: 2px solid transparent; background-clip: padding-box; }
+::-webkit-scrollbar-thumb:hover { background: linear-gradient(180deg, #5cff8a, #1fa65a); background-clip: padding-box; }
