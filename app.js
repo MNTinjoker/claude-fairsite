@@ -146,7 +146,7 @@ async function submit(activity, percent = null) {
 // The league pops up over the landing whenever the user comes back from a segment.
 let lastPage = null;
 
-const needsSurvey = () => !('survey' in scores) && Object.keys(scores).length > 0;
+const needsSurvey = () => !('survey' in scores) && Object.keys(scores).length > 0 && !(user && pendingSurvey());
 
 // Sign-up SMS codes go through the signup-otp edge function (the SMS key stays on the server).
 async function otpCall(body) {
@@ -608,6 +608,19 @@ function showInfo(html) {
   m.onclick = (e) => { if (e.target === m || e.target.id === 'ip-ok') close(); };
 }
 
+// Survey answers waiting to reach the server (survives reloads; sent again on the next login).
+const surveyKey = () => `survey-pending:${user.id}`;
+const pendingSurvey = () => { try { return JSON.parse(localStorage.getItem(surveyKey())); } catch { return null; } };
+async function flushSurvey(answers = pendingSurvey(), tries = 0) {
+  if (!answers || !user) return;
+  const { error } = await sb.rpc('submit_survey', { p_answers: answers });
+  if (error && tries < 5) return setTimeout(() => flushSurvey(answers, tries + 1), [2, 5, 10, 20, 40][tries] * 1000);
+  if (error) return;
+  try { localStorage.removeItem(surveyKey()); } catch {}
+  await loadScores();
+  toast(hi('+۲۰ امتیاز'));
+}
+
 function showSurvey() {
   const m = $('#modal');
   m.innerHTML = `
@@ -635,13 +648,12 @@ function showSurvey() {
     e.preventDefault();
     const fd = new FormData(form);
     const answers = cfg.SURVEY.filter(visible).map((s) => ({ q: s.q, a: fd.get('q' + cfg.SURVEY.indexOf(s)) }));
-    const { error } = await sb.rpc('submit_survey', { p_answers: answers });
-    if (error) return toast('خطا در ارسال');
+    // Thank the user at once; the answers are kept on the device and sent in the background (with retries).
+    try { localStorage.setItem(surveyKey(), JSON.stringify(answers)); } catch {}
     m.innerHTML = `<div class="panel"><h1 id="sv-thanks"></h1><button class="btn block" id="sv-ok">بستن</button></div>`;
     $('#sv-thanks').textContent = hi(cfg.SURVEY_THANKS);
     $('#sv-ok').onclick = () => { m.hidden = true; };
-    await loadScores();
-    toast(hi('+۲۰ امتیاز'));
+    flushSurvey(answers);
   };
 }
 
@@ -727,6 +739,7 @@ sb.auth.onAuthStateChange((event, session) => {
   if (user) setTimeout(async () => {
     loadRole();
     await loadScores();
+    if ('survey' in scores) { try { localStorage.removeItem(surveyKey()); } catch {} } else flushSurvey();
     if (!$('#modal').hidden || !$('.landing')) return;
     if (needsSurvey()) showSurvey();
   }, 0);
