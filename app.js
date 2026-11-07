@@ -46,7 +46,7 @@ const needsSurvey = () => !('survey' in scores) && Object.keys(scores).length > 
 
 /* ---------- Views ---------- */
 
-function renderLogin() {
+function renderEmailLogin() {
   let mode = 'in';
   const draw = () => {
     view.innerHTML = `
@@ -58,8 +58,10 @@ function renderLogin() {
           <button class="btn block" id="go">${mode === 'in' ? 'ورود' : 'ثبت‌نام'}</button>
           <div class="err" id="err"></div>
           <div class="switch">${mode === 'in' ? 'حساب نداری؟' : 'حساب داری؟'} <a href="#" id="sw">${mode === 'in' ? 'ثبت‌نام' : 'ورود'}</a></div>
+          <div class="switch"><a href="#" id="toPhone">ورود با شماره موبایل</a></div>
         </form>
       </section>`;
+    $('#toPhone').onclick = (e) => { e.preventDefault(); renderLogin(); };
     $('#sw').onclick = (e) => { e.preventDefault(); mode = mode === 'in' ? 'up' : 'in'; draw(); };
     $('#f').onsubmit = async (e) => {
       e.preventDefault();
@@ -72,6 +74,65 @@ function renderLogin() {
     };
   };
   draw();
+}
+
+// Persian/Arabic digits -> ASCII, then any Iranian mobile format -> +989xxxxxxxxx (or null).
+function normalizePhone(raw) {
+  const d = raw.replace(/[۰-۹]/g, (c) => c.charCodeAt(0) - 1776).replace(/[٠-٩]/g, (c) => c.charCodeAt(0) - 1632).replace(/\D/g, '');
+  const m = d.match(/^(?:0098|98|0)?(9\d{9})$/);
+  return m ? '+98' + m[1] : null;
+}
+
+// Phone login: SMS code via Supabase Auth (Send SMS hook -> Kavenegar).
+function renderLogin() {
+  let phone = null;
+  const drawPhone = () => {
+    view.innerHTML = `
+      <section class="login">
+        <form class="panel" id="f">
+          <h1>ورود با موبایل</h1>
+          <label>شماره موبایل</label>
+          <input type="tel" id="phone" required placeholder="09123456789" inputmode="tel" autocomplete="tel" dir="ltr">
+          <button class="btn block" id="go">ارسال کد</button>
+          <div class="err" id="err"></div>
+          <div class="switch"><a href="#" id="toEmail">ورود با ایمیل</a></div>
+        </form>
+      </section>`;
+    $('#toEmail').onclick = (e) => { e.preventDefault(); renderEmailLogin(); };
+    $('#f').onsubmit = async (e) => {
+      e.preventDefault();
+      phone = normalizePhone($('#phone').value);
+      if (!phone) return ($('#err').textContent = 'شماره موبایل معتبر نیست.');
+      $('#go').disabled = true; $('#err').textContent = '';
+      const { error } = await sb.auth.signInWithOtp({ phone });
+      $('#go').disabled = false;
+      if (error) return ($('#err').textContent = 'ارسال کد ناموفق بود. کمی بعد دوباره تلاش کن.');
+      drawCode();
+    };
+  };
+  const drawCode = () => {
+    view.innerHTML = `
+      <section class="login">
+        <form class="panel" id="f">
+          <h1>کد تایید</h1>
+          <label>کدی که به ${phone.replace('+98', '0')} پیامک شد</label>
+          <input type="text" id="code" required inputmode="numeric" autocomplete="one-time-code" maxlength="6" dir="ltr">
+          <button class="btn block" id="go">ورود</button>
+          <div class="err" id="err"></div>
+          <div class="switch"><a href="#" id="back">تغییر شماره</a></div>
+        </form>
+      </section>`;
+    $('#back').onclick = (e) => { e.preventDefault(); drawPhone(); };
+    $('#f').onsubmit = async (e) => {
+      e.preventDefault();
+      $('#go').disabled = true; $('#err').textContent = '';
+      const token = $('#code').value.replace(/[۰-۹]/g, (c) => c.charCodeAt(0) - 1776).trim();
+      const { error } = await sb.auth.verifyOtp({ phone, token, type: 'sms' });
+      $('#go').disabled = false;
+      if (error) $('#err').textContent = 'کد اشتباه یا منقضی شده است.';
+    };
+  };
+  drawPhone();
 }
 
 function renderLanding() {
