@@ -1,7 +1,7 @@
 // Fill these from Supabase → Project Settings → API
 window.APP_CONFIG = {
-  SUPABASE_URL: 'https://gyturwiuuncwgygquvim.supabase.co',
-  SUPABASE_ANON_KEY: 'sb_publishable_R4PqdgAWBR2OE6-OQewyuQ_s6q0CPQ6',
+  SUPABASE_URL: 'https://ghsfrxfkumeprkapwaiy.supabase.co',
+  SUPABASE_ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdoc2ZyeGZrdW1lcHJrYXB3YWl5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQwMjczNDAsImV4cCI6MjEwOTYwMzM0MH0.hLehQxAmUK5AqbxdrM8lvDPYfJOZ2J4uzsqHoGD4gkg',
 
   // App tours: each video lives in /tours.
   APPS: [
